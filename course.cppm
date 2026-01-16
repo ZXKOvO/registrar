@@ -19,6 +19,8 @@ public:
     string info();
     bool hasId(string id);
     void assignTeacher(class Teacher* teacher);
+    int getEnrollmentCount();
+    bool isFull();
     
 
 private:
@@ -71,6 +73,14 @@ bool Course::hasId(string id){
 
 void Course::assignTeacher(Teacher* teacher){
     _teacher = teacher;
+}
+
+int Course::getEnrollmentCount(){
+    return _students.size();
+}
+
+bool Course::isFull(){
+    return _students.size() >= 80;
 }
 
 

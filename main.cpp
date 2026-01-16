@@ -67,6 +67,63 @@ int main()
     system().teacherRoster("T002");
     system().teacherRoster("T003");
 
+    // === 测试新增功能 ===
+    std::println("\n=== 测试新增功能 ===");
+    
+    // 1. 测试报告生成功能
+    std::println("\n--- 系统报告 ---");
+    std::println("{}", system().generateEnrollmentReport());
+    std::println("\n{}", system().generateCourseReport());
+    
+    // 2. 测试添加新学生
+    std::println("\n--- 添加新学生 ---");
+    system().addStudent("S006", "张三");
+    system().studentSchedule("S006");
+    system().studentEnrollsInCourse("S006", "CS101");
+    std::println("张三选课CS101后:");
+    system().studentSchedule("S006");
+    
+    // 3. 测试添加新教师
+    std::println("\n--- 添加新教师 ---");
+    system().addTeacher("T004", "李老师");
+    system().teacherSchedule("T004");
+    
+    // 4. 测试添加新课程
+    std::println("\n--- 添加新课程 ---");
+    system().addCourse("CS301", "算法设计");
+    system().studentEnrollsInCourse("S001", "CS301");
+    system().studentEnrollsInCourse("S002", "CS301");
+    std::println("CS301课程选课情况:");
+    system().courseRoster("CS301");
+    
+    // 5. 测试课程状态查询
+    auto cs301 = system().findCourseById("CS301");
+    if (cs301) {
+        std::println("CS301选课人数: {}", cs301->getEnrollmentCount());
+        std::println("CS301是否已满: {}", cs301->isFull() ? "是" : "否");
+    }
+    
+    // 6. 测试教师工作量查询
+    auto smith = system().findTeacherById("T001");
+    if (smith) {
+        std::println("\nT001 Smith老师授课数量: {}", smith->getCourseCount());
+    }
+    
+    // 7. 测试删除功能
+    std::println("\n--- 测试删除功能 ---");
+    std::println("删除学生S006:");
+    system().removeStudent("S006");
+    
+    std::println("删除课程CS301:");
+    system().removeCourse("CS301");
+    
+    std::println("删除教师T004:");
+    system().removeTeacher("T004");
+    
+    // 8. 最终系统报告
+    std::println("\n--- 最终系统状态 ---");
+    std::println("{}", system().generateTeacherReport());
+
     return 0;
 }
 

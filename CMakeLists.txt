@@ -14,6 +14,10 @@ add_executable(registrar
 
 )
 
+add_executable(test_new_methods
+    test_new_methods.cpp
+)
+
 set(MODULE_INTERFACE_FILES
     #${MODULE_LIB_DIR1}/utils.cppm         #添加模块库的模块接口单元
     #math.cppm
@@ -31,6 +35,14 @@ target_sources(registrar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
     FILES ${MODULE_INTERFACE_FILES}
 )
 target_compile_features(registrar PRIVATE cxx_std_23)
+
+target_sources(test_new_methods  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
+    BASE_DIRS                              # 配置BASE_DIRS，用于组织构建输出目录，以便构建不同目录中(同名的)模块文件.
+        #${MODULE_LIB_DIR1}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    FILES ${MODULE_INTERFACE_FILES}
+)
+target_compile_features(test_new_methods PRIVATE cxx_std_23)
 
 
 

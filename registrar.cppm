@@ -23,12 +23,21 @@ public:
     void teacherSchedule(string tid);
     void teacherRoster(string tid);
     void initialize();
+    void addStudent(string id, string name);
+    void removeStudent(string id);
+    void addTeacher(string id, string name);
+    void removeTeacher(string id);
+    void addCourse(string id, string name);
+    void removeCourse(string id);
+    string generateEnrollmentReport();
+    string generateCourseReport();
+    string generateTeacherReport();
+    class Course* findCourseById(const string& id);
+    class Teacher* findTeacherById(const string& id);
     
 private:
     Registrar();
     class Student* findStudentById(const string& id);
-    class Course* findCourseById(const string& id);
-    class Teacher* findTeacherById(const string& id);
     
     vector<class Course*> _courses;
     vector<class Student*> _students;
@@ -187,4 +196,87 @@ string Course::roster(){
         rst +=s->info();
     }
     return rst;
+}
+
+// Registrar class additional methods
+void Registrar::addStudent(string id, string name){
+    if(!findStudentById(id)){
+        _students.push_back(new Student(id, name));
+    }
+}
+
+void Registrar::removeStudent(string id){
+    auto it = std::find_if(_students.begin(), _students.end(), 
+        [&id](Student* s){ return s->hasId(id); });
+    if(it != _students.end()){
+        delete *it;
+        _students.erase(it);
+    }
+}
+
+void Registrar::addTeacher(string id, string name){
+    if(!findTeacherById(id)){
+        _teachers.push_back(new Teacher(id, name));
+    }
+}
+
+void Registrar::removeTeacher(string id){
+    auto it = std::find_if(_teachers.begin(), _teachers.end(), 
+        [&id](Teacher* t){ return t->hasId(id); });
+    if(it != _teachers.end()){
+        delete *it;
+        _teachers.erase(it);
+    }
+}
+
+void Registrar::addCourse(string id, string name){
+    if(!findCourseById(id)){
+        _courses.push_back(new Course(id, name));
+    }
+}
+
+void Registrar::removeCourse(string id){
+    auto it = std::find_if(_courses.begin(), _courses.end(), 
+        [&id](Course* c){ return c->hasId(id); });
+    if(it != _courses.end()){
+        delete *it;
+        _courses.erase(it);
+    }
+}
+
+string Registrar::generateEnrollmentReport(){
+    string report = "=== 选课统计报告 ===\n";
+    report += std::format("总学生数: {}\n", _students.size());
+    report += std::format("总课程数: {}\n", _courses.size());
+    
+    for(auto& course : _courses){
+        report += std::format("课程 {} - 选课人数: {}/{}\n", 
+            course->info().substr(0, course->info().find_last_of("\n")), 
+            course->getEnrollmentCount(), 80);
+    }
+    return report;
+}
+
+string Registrar::generateCourseReport(){
+    string report = "=== 课程详细报告 ===\n";
+    for(auto& course : _courses){
+        report += course->info();
+        report += std::format("选课人数: {}/{}\n", course->getEnrollmentCount(), 80);
+        report += "选课学生名单:\n";
+        report += course->roster();
+        report += "\n";
+    }
+    return report;
+}
+
+string Registrar::generateTeacherReport(){
+    string report = "=== 教师工作量报告 ===\n";
+    for(auto& teacher : _teachers){
+        report += teacher->info();
+        report += std::format("授课数量: {}\n", teacher->getCourseCount());
+        report += "授课安排:\n";
+        report += teacher->schedule();
+        report += "\n";
+    }
+    return report;
 }
