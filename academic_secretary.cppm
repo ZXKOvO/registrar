@@ -1,6 +1,6 @@
 // Module
 // File: academic_secretary.cppm   Version: 0.1.0   License: AGPLv3
-// Created: 2026-01-16   Id:2024051604015   xxh
+// Created: 2026-01-17   Id:2024051604015   xxh
 // Description: 教学秘书模块 - 管理学生、教师、课程和生成报告
 //
 export module registrar:academic_secretary;
@@ -30,6 +30,19 @@ public:
     // 课程管理
     void addNewCourse(string id, string name);
     void removeCourse(string id);
+    
+    // 报告生成
+    string generateEnrollmentStatistics();
+    string generateCourseStatistics();
+    string generateTeacherWorkload();
+    
+    // 选课审批
+    void approveEnrollmentRequest(string studentId, string courseId);
+    void rejectEnrollmentRequest(string studentId, string courseId);
+    
+    // 信息查询
+    string info();
+    bool hasId(string id);
 
 private:
     string _name;
@@ -118,4 +131,91 @@ void AcademicSecretary::removeCourse(string id)
     }
     _registrar.removeCourse(id);
     std::println("成功删除课程ID: {}", id);
+}
+
+// ==================== 报告生成实现 ====================
+
+string AcademicSecretary::generateEnrollmentStatistics()
+{
+    return "========================================\n" +
+           "选课统计报告\n" +
+           "========================================\n" +
+           _registrar.generateEnrollmentReport() +
+           "========================================\n";
+}
+
+string AcademicSecretary::generateCourseStatistics()
+{
+    return "========================================\n" +
+           "课程统计报告\n" +
+           "========================================\n" +
+           _registrar.generateCourseReport() +
+           "========================================\n";
+}
+
+string AcademicSecretary::generateTeacherWorkload()
+{
+    return "========================================\n" +
+           "教师工作量报告\n" +
+           "========================================\n" +
+           _registrar.generateTeacherReport() +
+           "========================================\n";
+}
+
+// ==================== 选课审批实现 ====================
+
+void AcademicSecretary::approveEnrollmentRequest(string studentId, string courseId)
+{
+    auto student = _registrar.findStudentById(studentId);
+    auto course = _registrar.findCourseById(courseId);
+    
+    if (!student) {
+        std::println("学生ID {} 不存在，审批失败！", studentId);
+        return;
+    }
+    if (!course) {
+        std::println("课程ID {} 不存在，审批失败！", courseId);
+        return;
+    }
+    if (course->isFull()) {
+        std::println("课程 {} 已满，审批失败！", courseId);
+        return;
+    }
+    
+    _registrar.studentEnrollsInCourse(studentId, courseId);
+    std::println("已批准学生 {} 选课 {}", studentId, courseId);
+}
+
+void AcademicSecretary::rejectEnrollmentRequest(string studentId, string courseId)
+{
+    auto student = _registrar.findStudentById(studentId);
+    auto course = _registrar.findCourseById(courseId);
+    
+    if (!student) {
+        std::println("学生ID {} 不存在，拒绝失败！", studentId);
+        return;
+    }
+    if (!course) {
+        std::println("课程ID {} 不存在，拒绝失败！", courseId);
+        return;
+    }
+    
+    _registrar.studentDropsCourse(studentId, courseId);
+    std::println("已拒绝学生 {} 选课 {}", studentId, courseId);
+}
+
+// ==================== 信息查询实现 ====================
+
+string AcademicSecretary::info()
+{
+    return "========================================\n" +
+           "教学秘书信息\n" +
+           "========================================\n" +
+           format("{}   {}\n", _id, _name) +
+           "========================================\n";
+}
+
+bool AcademicSecretary::hasId(string id)
+{
+    return _id == id;
 }
