@@ -1,6 +1,6 @@
 // Module
 // File: academic_secretary.cppm   Version: 0.1.0   License: AGPLv3
-// Created: 2026-01-16
+// Created: 2026-01-16   Id:2024051604015   xxh
 // Description: 教学秘书模块 - 管理学生、教师、课程和生成报告
 //
 export module registrar:academic_secretary;
@@ -22,6 +22,14 @@ public:
     // 学生管理
     void addNewStudent(string id, string name);
     void removeStudent(string id);
+    
+    // 教师管理
+    void addNewTeacher(string id, string name);
+    void removeTeacher(string id);
+    
+    // 课程管理
+    void addNewCourse(string id, string name);
+    void removeCourse(string id);
 
 private:
     string _name;
@@ -66,4 +74,48 @@ void AcademicSecretary::removeStudent(string id)
     }
     _registrar.removeStudent(id);
     std::println("成功删除学生ID: {}", id);
+}
+
+// ==================== 教师管理实现 ====================
+
+void AcademicSecretary::addNewTeacher(string id, string name)
+{
+    if (_registrar.findTeacherById(id)) {
+        std::println("教师ID {} 已存在，添加失败！", id);
+        return;
+    }
+    _registrar.addTeacher(id, name);
+    std::println("成功添加教师: {} ({})", name, id);
+}
+
+void AcademicSecretary::removeTeacher(string id)
+{
+    if (!_registrar.findTeacherById(id)) {
+        std::println("教师ID {} 不存在，删除失败！", id);
+        return;
+    }
+    _registrar.removeTeacher(id);
+    std::println("成功删除教师ID: {}", id);
+}
+
+// ==================== 课程管理实现 ====================
+
+void AcademicSecretary::addNewCourse(string id, string name)
+{
+    if (_registrar.findCourseById(id)) {
+        std::println("课程ID {} 已存在，添加失败！", id);
+        return;
+    }
+    _registrar.addCourse(id, name);
+    std::println("成功添加课程: {} ({})", name, id);
+}
+
+void AcademicSecretary::removeCourse(string id)
+{
+    if (!_registrar.findCourseById(id)) {
+        std::println("课程ID {} 不存在，删除失败！", id);
+        return;
+    }
+    _registrar.removeCourse(id);
+    std::println("成功删除课程ID: {}", id);
 }
