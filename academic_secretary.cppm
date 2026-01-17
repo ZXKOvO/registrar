@@ -3,7 +3,7 @@
 // Created: 2026-01-17   Id:2024051604015   xxh
 // Description: 教学秘书模块 - 管理学生、教师、课程和生成报告
 //
-export module registrar:academic_secretary;
+export module secretary;
 import registrar;
 import std;
 using std::string;
@@ -137,7 +137,7 @@ void AcademicSecretary::removeCourse(string id)
 
 string AcademicSecretary::generateEnrollmentStatistics()
 {
-    return "========================================\n" +
+    return string("========================================\n") +
            "选课统计报告\n" +
            "========================================\n" +
            _registrar.generateEnrollmentReport() +
@@ -146,7 +146,7 @@ string AcademicSecretary::generateEnrollmentStatistics()
 
 string AcademicSecretary::generateCourseStatistics()
 {
-    return "========================================\n" +
+    return string("========================================\n") +
            "课程统计报告\n" +
            "========================================\n" +
            _registrar.generateCourseReport() +
@@ -155,7 +155,7 @@ string AcademicSecretary::generateCourseStatistics()
 
 string AcademicSecretary::generateTeacherWorkload()
 {
-    return "========================================\n" +
+    return string("========================================\n") +
            "教师工作量报告\n" +
            "========================================\n" +
            _registrar.generateTeacherReport() +
@@ -208,7 +208,7 @@ void AcademicSecretary::rejectEnrollmentRequest(string studentId, string courseI
 
 string AcademicSecretary::info()
 {
-    return "========================================\n" +
+    return string("========================================\n") +
            "教学秘书信息\n" +
            "========================================\n" +
            format("{}   {}\n", _id, _name) +

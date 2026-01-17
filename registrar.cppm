@@ -8,7 +8,6 @@ export module registrar;
 export import :student;
 export import :course;
 export import :teacher;
-export import :academic_secretary;
 import std;
 using std::string;
 using std::vector;
@@ -35,10 +34,10 @@ public:
     string generateTeacherReport();
     class Course* findCourseById(const string& id);
     class Teacher* findTeacherById(const string& id);
+    class Student* findStudentById(const string& id);
     
 private:
     Registrar();
-    class Student* findStudentById(const string& id);
     
     vector<class Course*> _courses;
     vector<class Student*> _students;
