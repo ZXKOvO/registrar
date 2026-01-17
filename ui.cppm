@@ -1,0 +1,636 @@
+// Module
+// File: ui.cppm   Version: 0.1.0   License: AGPLv3
+// Created: CCJ      2026-01-17 19:05:37
+// Description:
+//     增加学生ui界面
+export module registrar:ui;
+import std;
+import :registrar;
+import :student;
+import :course;
+import :teacher;
+import :academic_secretary;
+using std::string;
+using std::vector;
+
+// 用户类型枚举
+export enum class UserTypes
+{
+    STUDENT,
+    TEACHER,
+    SECRETARY
+};
+
+// UI类 - 用户界面管理
+export class UI
+{
+public:
+    UI();
+    void showMainMenu();
+    void showStudentMenu();
+    void showTeacherMenu();
+    void showSecretaryMenu();
+    void studentEnrollmentInterface();
+    void studentDropInterface();
+    void studentScheduleInterface();
+    void teacherScheduleInterface();
+    void teacherRosterInterface();
+    void secretaryStudentManagement();
+    void secretaryTeacherManagement();
+    void secretaryCourseManagement();
+    void secretaryReportInterface();
+    void loginInterface();
+    bool authenticateUser(string id, string password, UserTypes type);
+    void displayReport(string report);
+    void displayMessage(string message);
+
+private:
+    Registrar& _registrar;
+    AcademicSecretary* _currentSecretary;
+    UserTypes _currentUserType;
+    string _currentUserId;
+    
+    void displayStudentList();
+    void displayCourseList();
+    void displayTeacherList();
+    void clearScreen();
+    void pause();
+};
+
+UI::UI()
+    : _registrar(Registrar::system())
+    , _currentSecretary(nullptr)
+    , _currentUserType(UserTypes::STUDENT)
+    , _currentUserId("")
+{}
+
+void UI::clearScreen()
+{
+    // 清屏操作
+    std::print("\033[2J\033[H");
+}
+
+void UI::pause()
+{
+    std::print("\n按回车键继续...");
+    std::string temp;
+    std::getline(std::cin, temp);
+}
+
+void UI::displayMessage(string message)
+{
+    std::print("\n{}\n", message);
+}
+
+void UI::displayReport(string report)
+{
+    std::print("\n{}\n", report);
+}
+
+void UI::showMainMenu()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("        学术注册系统 - 主菜单\n");
+        std::print("========================================\n");
+        std::print("1. 学生登录\n");
+        std::print("2. 教师登录\n");
+        std::print("3. 教学秘书登录\n");
+        std::print("0. 退出系统\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore(); // 清除输入缓冲区
+        
+        switch (choice)
+        {
+            case 1:
+                _currentUserType = UserTypes::STUDENT;
+                loginInterface();
+                break;
+            case 2:
+                _currentUserType = UserTypes::TEACHER;
+                loginInterface();
+                break;
+            case 3:
+                _currentUserType = UserTypes::SECRETARY;
+                loginInterface();
+                break;
+            case 0:
+                std::print("感谢使用，再见！\n");
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::loginInterface()
+{
+    clearScreen();
+    std::print("========================================\n");
+    std::print("              用户登录\n");
+    std::print("========================================\n");
+    
+    string id, password;
+    std::print("请输入ID: ");
+    std::getline(std::cin, id);
+    std::print("请输入密码: ");
+    std::getline(std::cin, password);
+    
+    if (authenticateUser(id, password, _currentUserType))
+    {
+        _currentUserId = id;
+        displayMessage("登录成功！");
+        pause();
+        
+        switch (_currentUserType)
+        {
+            case UserTypes::STUDENT:
+                showStudentMenu();
+                break;
+            case UserTypes::TEACHER:
+                showTeacherMenu();
+                break;
+            case UserTypes::SECRETARY:
+                showSecretaryMenu();
+                break;
+        }
+    }
+    else
+    {
+        displayMessage("登录失败！用户ID或密码错误。");
+        pause();
+    }
+}
+
+bool UI::authenticateUser(string id, string password, UserTypes type)
+{
+    switch (type)
+    {
+        case UserTypes::STUDENT:
+            return _registrar.findStudentById(id) != nullptr;
+        case UserTypes::TEACHER:
+            return _registrar.findTeacherById(id) != nullptr;
+        case UserTypes::SECRETARY:
+            // 教学秘书需要密码验证
+            if (_currentSecretary && _currentSecretary->hasId(id))
+            {
+                return _currentSecretary->authenticate(password);
+            }
+            return false;
+        default:
+            return false;
+    }
+}
+
+void UI::showStudentMenu()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("          学生菜单\n");
+        std::print("========================================\n");
+        std::print("1. 选课\n");
+        std::print("2. 退课\n");
+        std::print("3. 查看课程表\n");
+        std::print("4. 查看可选课程\n");
+        std::print("0. 返回主菜单\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+                studentEnrollmentInterface();
+                break;
+            case 2:
+                studentDropInterface();
+                break;
+            case 3:
+                studentScheduleInterface();
+                break;
+            case 4:
+                displayCourseList();
+                pause();
+                break;
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::studentEnrollmentInterface()
+{
+    clearScreen();
+    std::print("========================================\n");
+    std::print("              选课界面\n");
+    std::print("========================================\n");
+    
+    displayCourseList();
+    
+    string courseId;
+    std::print("\n请输入要选修的课程ID: ");
+    std::getline(std::cin, courseId);
+    
+    _registrar.studentEnrollsInCourse(_currentUserId, courseId);
+    pause();
+}
+
+void UI::studentDropInterface()
+{
+    clearScreen();
+    std::print("========================================\n");
+    std::print("              退课界面\n");
+    std::print("========================================\n");
+    
+    // 显示当前已选课程
+    auto student = _registrar.findStudentById(_currentUserId);
+    if (student)
+    {
+        std::print("当前已选课程:\n");
+        std::print("{}", student->schedule());
+    }
+    
+    string courseId;
+    std::print("\n请输入要退选的课程ID: ");
+    std::getline(std::cin, courseId);
+    
+    _registrar.studentDropsCourse(_currentUserId, courseId);
+    pause();
+}
+
+void UI::studentScheduleInterface()
+{
+    clearScreen();
+    std::print("========================================\n");
+    std::print("            课程表界面\n");
+    std::print("========================================\n");
+    
+    _registrar.studentSchedule(_currentUserId);
+    pause();
+}
+
+void UI::showTeacherMenu()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("          教师菜单\n");
+        std::print("========================================\n");
+        std::print("1. 查看课程表\n");
+        std::print("2. 查看学生名单\n");
+        std::print("0. 返回主菜单\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+                teacherScheduleInterface();
+                break;
+            case 2:
+                teacherRosterInterface();
+                break;
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::teacherScheduleInterface()
+{
+    clearScreen();
+    std::print("========================================\n");
+    std::print("          教师课程表\n");
+    std::print("========================================\n");
+    
+    _registrar.teacherSchedule(_currentUserId);
+    pause();
+}
+
+void UI::teacherRosterInterface()
+{
+    clearScreen();
+    std::print("========================================\n");
+    std::print("          学生名单\n");
+    std::print("========================================\n");
+    
+    std::print("请输入课程ID: ");
+    string courseId;
+    std::getline(std::cin, courseId);
+    
+    _registrar.courseRoster(courseId);
+    pause();
+}
+
+void UI::showSecretaryMenu()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("        教学秘书菜单\n");
+        std::print("========================================\n");
+        std::print("1. 学生管理\n");
+        std::print("2. 教师管理\n");
+        std::print("3. 课程管理\n");
+        std::print("4. 报表生成\n");
+        std::print("0. 返回主菜单\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+                secretaryStudentManagement();
+                break;
+            case 2:
+                secretaryTeacherManagement();
+                break;
+            case 3:
+                secretaryCourseManagement();
+                break;
+            case 4:
+                secretaryReportInterface();
+                break;
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::secretaryStudentManagement()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("        学生管理\n");
+        std::print("========================================\n");
+        std::print("1. 查看学生列表\n");
+        std::print("2. 添加学生\n");
+        std::print("3. 删除学生\n");
+        std::print("0. 返回\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+                displayStudentList();
+                pause();
+                break;
+            case 2:
+            {
+                string id, name;
+                std::print("请输入学生ID: ");
+                std::getline(std::cin, id);
+                std::print("请输入学生姓名: ");
+                std::getline(std::cin, name);
+                _registrar.addStudent(id, name);
+                displayMessage("学生添加成功！");
+                pause();
+                break;
+            }
+            case 3:
+            {
+                string id;
+                std::print("请输入要删除的学生ID: ");
+                std::getline(std::cin, id);
+                _registrar.removeStudent(id);
+                displayMessage("学生删除成功！");
+                pause();
+                break;
+            }
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::secretaryTeacherManagement()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("        教师管理\n");
+        std::print("========================================\n");
+        std::print("1. 查看教师列表\n");
+        std::print("2. 添加教师\n");
+        std::print("3. 删除教师\n");
+        std::print("0. 返回\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+                displayTeacherList();
+                pause();
+                break;
+            case 2:
+            {
+                string id, name;
+                std::print("请输入教师ID: ");
+                std::getline(std::cin, id);
+                std::print("请输入教师姓名: ");
+                std::getline(std::cin, name);
+                _registrar.addTeacher(id, name);
+                displayMessage("教师添加成功！");
+                pause();
+                break;
+            }
+            case 3:
+            {
+                string id;
+                std::print("请输入要删除的教师ID: ");
+                std::getline(std::cin, id);
+                _registrar.removeTeacher(id);
+                displayMessage("教师删除成功！");
+                pause();
+                break;
+            }
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::secretaryCourseManagement()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("        课程管理\n");
+        std::print("========================================\n");
+        std::print("1. 查看课程列表\n");
+        std::print("2. 添加课程\n");
+        std::print("3. 删除课程\n");
+        std::print("0. 返回\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+                displayCourseList();
+                pause();
+                break;
+            case 2:
+            {
+                string id, name;
+                std::print("请输入课程ID: ");
+                std::getline(std::cin, id);
+                std::print("请输入课程名称: ");
+                std::getline(std::cin, name);
+                _registrar.addCourse(id, name);
+                displayMessage("课程添加成功！");
+                pause();
+                break;
+            }
+            case 3:
+            {
+                string id;
+                std::print("请输入要删除的课程ID: ");
+                std::getline(std::cin, id);
+                _registrar.removeCourse(id);
+                displayMessage("课程删除成功！");
+                pause();
+                break;
+            }
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::secretaryReportInterface()
+{
+    while (true)
+    {
+        clearScreen();
+        std::print("========================================\n");
+        std::print("        报表生成\n");
+        std::print("========================================\n");
+        std::print("1. 选课统计报告\n");
+        std::print("2. 课程详细报告\n");
+        std::print("3. 教师工作量报告\n");
+        std::print("0. 返回\n");
+        std::print("========================================\n");
+        std::print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+            {
+                string report = _registrar.generateEnrollmentReport();
+                displayReport(report);
+                pause();
+                break;
+            }
+            case 2:
+            {
+                string report = _registrar.generateCourseReport();
+                displayReport(report);
+                pause();
+                break;
+            }
+            case 3:
+            {
+                string report = _registrar.generateTeacherReport();
+                displayReport(report);
+                pause();
+                break;
+            }
+            case 0:
+                return;
+            default:
+                displayMessage("无效的选择，请重新输入！");
+                pause();
+        }
+    }
+}
+
+void UI::displayStudentList()
+{
+    std::print("\n=== 学生列表 ===\n");
+    std::print("学号\t姓名\n");
+    std::print("----------------\n");
+    // 这里需要从Registrar获取学生列表
+    // 由于Student类的私有成员访问限制，需要添加公共方法或通过Registrar实现
+    displayMessage("学生列表功能需要进一步完善Registrar类");
+}
+
+void UI::displayCourseList()
+{
+    std::print("\n=== 可选课程列表 ===\n");
+    std::print("课程ID\t课程名称\t选课人数\n");
+    std::print("--------------------------------\n");
+    // 这里需要从Registrar获取课程列表
+    displayMessage("课程列表功能需要进一步完善Registrar类");
+}
+
+void UI::displayTeacherList()
+{
+    std::print("\n=== 教师列表 ===\n");
+    std::print("教师ID\t姓名\n");
+    std::print("----------------\n");
+    // 这里需要从Registrar获取教师列表
+    displayMessage("教师列表功能需要进一步完善Registrar类");
+}

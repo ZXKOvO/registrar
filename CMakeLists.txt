@@ -23,6 +23,7 @@ set(MODULE_INTERFACE_FILES
     course.cppm
     teacher.cppm
     grade.cppm
+    ui.cppm
     academic_secretary.cppm# 模块接口单元
 )
 
