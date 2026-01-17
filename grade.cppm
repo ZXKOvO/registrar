@@ -14,33 +14,16 @@ public:
     // 构造函数 - 创建成绩对象
     // 参数：studentId（学生ID）、courseId（课程ID）、teacherId（教师ID）、score（分数）、comment（评语，默认为空）
     Grade(string studentId, string courseId, string teacherId, double score, string comment = "");
-    
-    // 获取学生ID
-    string getStudentId() const;
-    
-    // 获取课程ID
-    string getCourseId() const;
-    
-    // 获取教师ID
-    string getTeacherId() const;
-    
-    // 获取分数
-    double getScore() const;
-    
-    // 获取评语
-    string getComment() const;
-    
-    // 设置分数
-    // 参数：score（新的分数）
-    void setScore(double score);
-    
-    // 设置评语
-    // 参数：comment（新的评语）
-    void setComment(string comment);
-    
+
     // 获取成绩的详细信息
     // 返回：格式化的成绩信息字符串
     string info() const;
+
+    // 更新成绩信息
+    void updateInfo(double score, string comment);
+
+    // 检查是否匹配指定的学生ID和课程ID
+    bool matches(string studentId, string courseId) const;
 
 private:
     string _studentId;      // 学生ID
@@ -59,51 +42,22 @@ Grade::Grade(string studentId, string courseId, string teacherId, double score, 
     , _comment(comment)
 {}
 
-// 获取学生ID
-string Grade::getStudentId() const
-{
-    return _studentId;
-}
-
-// 获取课程ID
-string Grade::getCourseId() const
-{
-    return _courseId;
-}
-
-// 获取教师ID
-string Grade::getTeacherId() const
-{
-    return _teacherId;
-}
-
-// 获取分数
-double Grade::getScore() const
-{
-    return _score;
-}
-
-// 获取评语
-string Grade::getComment() const
-{
-    return _comment;
-}
-
-// 设置分数
-void Grade::setScore(double score)
-{
-    _score = score;
-}
-
-// 设置评语
-void Grade::setComment(string comment)
-{
-    _comment = comment;
-}
-
 // 获取成绩详细信息
 string Grade::info() const
 {
-    return format("学生: {} | 课程: {} | 教师: {} | 成绩: {:.1f} | 评语: {}\n", 
+    return format("学生: {} | 课程: {} | 教师: {} | 成绩: {:.1f} | 评语: {}\n",
                   _studentId, _courseId, _teacherId, _score, _comment);
+}
+
+// 更新成绩信息
+void Grade::updateInfo(double score, string comment)
+{
+    _score = score;
+    _comment = comment;
+}
+
+// 检查是否匹配指定的学生ID和课程ID
+bool Grade::matches(string studentId, string courseId) const
+{
+    return _studentId == studentId && _courseId == courseId;
 }

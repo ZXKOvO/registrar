@@ -5,10 +5,7 @@
 //     增加学生ui界面
 export module registrar:ui;
 import std;
-import :registrar;
-import :student;
-import :course;
-import :teacher;
+import registrar;
 import :academic_secretary;
 using std::string;
 using std::vector;
@@ -610,27 +607,44 @@ void UI::secretaryReportInterface()
 void UI::displayStudentList()
 {
     std::print("\n=== 学生列表 ===\n");
-    std::print("学号\t姓名\n");
-    std::print("----------------\n");
-    // 这里需要从Registrar获取学生列表
-    // 由于Student类的私有成员访问限制，需要添加公共方法或通过Registrar实现
-    displayMessage("学生列表功能需要进一步完善Registrar类");
+    std::print("学号\t姓名\t已选课程数\n");
+    std::print("----------------------------\n");
+
+    _registrar.forEachStudent([&](auto& student) {
+        std::print("{}\n", student->info());
+    });
 }
 
 void UI::displayCourseList()
 {
     std::print("\n=== 可选课程列表 ===\n");
-    std::print("课程ID\t课程名称\t选课人数\n");
-    std::print("--------------------------------\n");
-    // 这里需要从Registrar获取课程列表
-    displayMessage("课程列表功能需要进一步完善Registrar类");
+    std::print("课程ID\t课程名称\t选课人数\t状态\n");
+    std::print("------------------------------------------------\n");
+
+    _registrar.forEachCourse([&](auto& course) {
+        auto info = course->info();
+        int count;
+        bool full;
+        course->displayEnrollmentInfo(count, full);
+        std::print("{}\t{}/80\t{}\n",
+            info.substr(0, info.find('\n')),
+            count,
+            full ? "已满" : "可选");
+    });
 }
 
 void UI::displayTeacherList()
 {
     std::print("\n=== 教师列表 ===\n");
-    std::print("教师ID\t姓名\n");
-    std::print("----------------\n");
-    // 这里需要从Registrar获取教师列表
-    displayMessage("教师列表功能需要进一步完善Registrar类");
+    std::print("教师ID\t姓名\t授课数\n");
+    std::print("------------------------\n");
+    
+    _registrar.forEachTeacher([&](auto& teacher) {
+        auto info = teacher->info();
+        int count;
+        teacher->displayCourseInfo(count);
+        std::print("{}\t{}\n",
+            info.substr(0, info.find('\n')),
+            count);
+    });
 }

@@ -8,6 +8,8 @@ export module registrar;
 export import :student;
 export import :course;
 export import :teacher;
+export import :grade;
+export import :teaching_task;
 import std;
 using std::string;
 using std::vector;
@@ -35,10 +37,13 @@ public:
     class Course* findCourseById(const string& id);
     class Teacher* findTeacherById(const string& id);
     class Student* findStudentById(const string& id);
-    
+    void forEachStudent(auto&& func);
+    void forEachTeacher(auto&& func);
+    void forEachCourse(auto&& func);
+
 private:
     Registrar();
-    
+
     vector<class Course*> _courses;
     vector<class Student*> _students;
     vector<class Teacher*> _teachers;
@@ -162,6 +167,24 @@ Teacher *Registrar::findTeacherById(const string&id){
     return nullptr;
 }
 
+void Registrar::forEachStudent(auto&& func){
+    for(auto& student : _students){
+        func(student);
+    }
+}
+
+void Registrar::forEachTeacher(auto&& func){
+    for(auto& teacher : _teachers){
+        func(teacher);
+    }
+}
+
+void Registrar::forEachCourse(auto&& func){
+    for(auto& course : _courses){
+        func(course);
+    }
+}
+
 // Student class additional methods
 void Student::enrollsIn(Course *course){
     if(course->acceptEnrollment(this))
@@ -248,11 +271,14 @@ string Registrar::generateEnrollmentReport(){
     string report = "=== 选课统计报告 ===\n";
     report += std::format("总学生数: {}\n", _students.size());
     report += std::format("总课程数: {}\n", _courses.size());
-    
+
     for(auto& course : _courses){
-        report += std::format("课程 {} - 选课人数: {}/{}\n", 
-            course->info().substr(0, course->info().find_last_of("\n")), 
-            course->getEnrollmentCount(), 80);
+        int count;
+        bool full;
+        course->displayEnrollmentInfo(count, full);
+        report += std::format("课程 {} - 选课人数: {}/{}\n",
+            course->info().substr(0, course->info().find_last_of("\n")),
+            count, 80);
     }
     return report;
 }
@@ -260,8 +286,11 @@ string Registrar::generateEnrollmentReport(){
 string Registrar::generateCourseReport(){
     string report = "=== 课程详细报告 ===\n";
     for(auto& course : _courses){
+        int count;
+        bool full;
+        course->displayEnrollmentInfo(count, full);
         report += course->info();
-        report += std::format("选课人数: {}/{}\n", course->getEnrollmentCount(), 80);
+        report += std::format("选课人数: {}/{}\n", count, 80);
         report += "选课学生名单:\n";
         report += course->roster();
         report += "\n";
@@ -272,8 +301,10 @@ string Registrar::generateCourseReport(){
 string Registrar::generateTeacherReport(){
     string report = "=== 教师工作量报告 ===\n";
     for(auto& teacher : _teachers){
+        int count;
+        teacher->displayCourseInfo(count);
         report += teacher->info();
-        report += std::format("授课数量: {}\n", teacher->getCourseCount());
+        report += std::format("授课数量: {}\n", count);
         report += "授课安排:\n";
         report += teacher->schedule();
         report += "\n";

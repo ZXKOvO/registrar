@@ -15,29 +15,6 @@ public:
     // 参数：teacherId（教师ID）、courseId（课程ID）、semester（学期）、timeSlot（时间段）、classroom（教室）
     TeachingTask(string teacherId, string courseId, string semester, string timeSlot, string classroom);
     
-    // 获取教师ID
-    string getTeacherId() const;
-    
-    // 获取课程ID
-    string getCourseId() const;
-    
-    // 获取学期
-    string getSemester() const;
-    
-    // 获取时间段
-    string getTimeSlot() const;
-    
-    // 获取教室
-    string getClassroom() const;
-    
-    // 设置时间段
-    // 参数：timeSlot（新的时间段）
-    void setTimeSlot(string timeSlot);
-    
-    // 设置教室
-    // 参数：classroom（新的教室）
-    void setClassroom(string classroom);
-    
     // 获取教学任务的详细信息
     // 返回：格式化的教学任务信息字符串
     string info() const;
@@ -58,48 +35,6 @@ TeachingTask::TeachingTask(string teacherId, string courseId, string semester, s
     , _timeSlot(timeSlot)
     , _classroom(classroom)
 {}
-
-// 获取教师ID
-string TeachingTask::getTeacherId() const
-{
-    return _teacherId;
-}
-
-// 获取课程ID
-string TeachingTask::getCourseId() const
-{
-    return _courseId;
-}
-
-// 获取学期
-string TeachingTask::getSemester() const
-{
-    return _semester;
-}
-
-// 获取时间段
-string TeachingTask::getTimeSlot() const
-{
-    return _timeSlot;
-}
-
-// 获取教室
-string TeachingTask::getClassroom() const
-{
-    return _classroom;
-}
-
-// 设置时间段
-void TeachingTask::setTimeSlot(string timeSlot)
-{
-    _timeSlot = timeSlot;
-}
-
-// 设置教室
-void TeachingTask::setClassroom(string classroom)
-{
-    _classroom = classroom;
-}
 
 // 获取教学任务详细信息
 string TeachingTask::info() const

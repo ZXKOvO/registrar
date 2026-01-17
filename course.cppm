@@ -19,9 +19,7 @@ public:
     string info();
     bool hasId(string id);
     void assignTeacher(class Teacher* teacher);
-    int getEnrollmentCount();
-    bool isFull();
-    
+    void displayEnrollmentInfo(int& count, bool& full);
 
 private:
     string m_name;
@@ -75,12 +73,9 @@ void Course::assignTeacher(Teacher* teacher){
     _teacher = teacher;
 }
 
-int Course::getEnrollmentCount(){
-    return _students.size();
-}
-
-bool Course::isFull(){
-    return _students.size() >= 80;
+void Course::displayEnrollmentInfo(int& count, bool& full){
+    count = _students.size();
+    full = _students.size() >= 80;
 }
 
 

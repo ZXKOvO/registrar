@@ -4,6 +4,7 @@
 // Description:安排授课
 export module registrar:teacher;
 import :course;
+import :grade;
 import std;
 using std::string;
 using std::vector;
@@ -18,12 +19,14 @@ public:
     bool hasCourse(string courseId);
     string schedule();
     string roster();
-    int getCourseCount();
+    void displayCourseInfo(int& count);
+    class Grade* gradeCourse(string studentId, string courseId, double score, string comment = "");
 
 private:
     string m_name;
     string m_id;
     vector<class Course*> _courses;
+    vector<class Grade*> _grades;
 };
 
 Teacher::Teacher(string id, string name)
@@ -81,7 +84,14 @@ string Teacher::roster()
     return result;
 }
 
-int Teacher::getCourseCount()
+void Teacher::displayCourseInfo(int& count)
 {
-    return _courses.size();
+    count = _courses.size();
+}
+
+class Grade* Teacher::gradeCourse(string studentId, string courseId, double score, string comment)
+{
+    auto grade = new Grade(studentId, courseId, m_id, score, comment);
+    _grades.push_back(grade);
+    return grade;
 }

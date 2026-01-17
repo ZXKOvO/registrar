@@ -3,7 +3,7 @@
 // Created: 2026-01-17   Id:2024051604015   xxh
 // Description: 教学秘书模块 - 管理学生、教师、课程和生成报告
 //
-export module secretary;
+export module registrar:academic_secretary;
 import registrar;
 import std;
 using std::string;
@@ -188,29 +188,32 @@ void AcademicSecretary::viewTeachingTasks()
 
 string AcademicSecretary::generateEnrollmentStatistics()
 {
-    return string("========================================\n") +
-           "选课统计报告\n" +
-           "========================================\n" +
-           _registrar.generateEnrollmentReport() +
-           "========================================\n";
+    return format("========================================\n"
+                  "选课统计报告\n"
+                  "========================================\n"
+                  "{}"
+                  "========================================\n", 
+                  _registrar.generateEnrollmentReport());
 }
 
 string AcademicSecretary::generateCourseStatistics()
 {
-    return string("========================================\n") +
-           "课程统计报告\n" +
-           "========================================\n" +
-           _registrar.generateCourseReport() +
-           "========================================\n";
+    return format("========================================\n"
+                  "课程统计报告\n"
+                  "========================================\n"
+                  "{}"
+                  "========================================\n", 
+                  _registrar.generateCourseReport());
 }
 
 string AcademicSecretary::generateTeacherWorkload()
 {
-    return string("========================================\n") +
-           "教师工作量报告\n" +
-           "========================================\n" +
-           _registrar.generateTeacherReport() +
-           "========================================\n";
+    return format("========================================\n"
+                  "教师工作量报告\n"
+                  "========================================\n"
+                  "{}"
+                  "========================================\n", 
+                  _registrar.generateTeacherReport());
 }
 
 // ==================== 选课审批实现 ====================
@@ -219,7 +222,7 @@ void AcademicSecretary::approveEnrollmentRequest(string studentId, string course
 {
     auto student = _registrar.findStudentById(studentId);
     auto course = _registrar.findCourseById(courseId);
-    
+
     if (!student) {
         print("学生ID {} 不存在，审批失败！\n", studentId);
         return;
@@ -228,11 +231,14 @@ void AcademicSecretary::approveEnrollmentRequest(string studentId, string course
         print("课程ID {} 不存在，审批失败！\n", courseId);
         return;
     }
-    if (course->isFull()) {
+    int count;
+    bool full;
+    course->displayEnrollmentInfo(count, full);
+    if (full) {
         print("课程 {} 已满，审批失败！\n", courseId);
         return;
     }
-    
+
     _registrar.studentEnrollsInCourse(studentId, courseId);
     print("已批准学生 {} 选课 {}\n", studentId, courseId);
 }
@@ -259,11 +265,12 @@ void AcademicSecretary::rejectEnrollmentRequest(string studentId, string courseI
 
 string AcademicSecretary::info()
 {
-    return string("========================================\n") +
-           "教学秘书信息\n" +
-           "========================================\n" +
-           format("{}   {}\n", _id, _name) +
-           "========================================\n";
+    return format("========================================\n"
+                  "教学秘书信息\n"
+                  "========================================\n"
+                  "{}   {}\n"
+                  "========================================\n", 
+                  _id, _name);
 }
 
 bool AcademicSecretary::hasId(string id)

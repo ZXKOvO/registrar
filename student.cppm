@@ -5,6 +5,7 @@
 //
 export module registrar:student;
 import std;
+import :course;
 using std::string;
 using std::vector;
 
@@ -31,10 +32,26 @@ Student::Student(string id, string name)
 
 string Student::info()
 {
-    return format("{}   {}\n", m_id, m_name);
+    return format("{}   {}\t{}", m_id, m_name, _courses.size());
 }
 
 bool Student::hasId(string id)
 {
     return id == m_id;
+}
+
+void Student::enrollsIn(class Course* course)
+{
+    if(course->acceptEnrollment(this))
+        _courses.push_back(course);
+}
+
+void Student::dropCourse(class Course* course)
+{
+    if(course->removeStudent(this)){
+        auto it = std::find(_courses.begin(), _courses.end(), course);
+        if(it != _courses.end()){
+            _courses.erase(it);
+        }
+    }
 }
