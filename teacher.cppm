@@ -21,6 +21,10 @@ public:
     string roster();
     void displayCourseInfo(int& count);
     class Grade* gradeCourse(string studentId, string courseId, double score, string comment = "");
+    void forEachGrade(void (*func)(Grade*));
+    class Grade* findGrade(string studentId, string courseId);
+    class Grade* updateGrade(string studentId, string courseId, double score, string comment);
+    vector<Grade*>& getGrades();
 
 private:
     string m_name;
@@ -94,4 +98,40 @@ class Grade* Teacher::gradeCourse(string studentId, string courseId, double scor
     auto grade = new Grade(studentId, courseId, m_id, score, comment);
     _grades.push_back(grade);
     return grade;
+}
+
+void Teacher::forEachGrade(void (*func)(Grade*))
+{
+    for (auto& grade : _grades)
+    {
+        func(grade);
+    }
+}
+
+vector<Grade*>& Teacher::getGrades()
+{
+    return _grades;
+}
+
+class Grade* Teacher::findGrade(string studentId, string courseId)
+{
+    for (auto& grade : _grades)
+    {
+        if (grade->matches(studentId, courseId))
+        {
+            return grade;
+        }
+    }
+    return nullptr;
+}
+
+class Grade* Teacher::updateGrade(string studentId, string courseId, double score, string comment)
+{
+    auto grade = findGrade(studentId, courseId);
+    if (grade)
+    {
+        grade->updateInfo(score, comment);
+        return grade;
+    }
+    return nullptr;
 }

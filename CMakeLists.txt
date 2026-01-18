@@ -26,7 +26,6 @@ set(MODULE_INTERFACE_FILES
     teaching_task.cppm
     ui.cppm
     academic_secretary.cppm
-    main_ui.cppm# 模块接口单元
 )
 
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})

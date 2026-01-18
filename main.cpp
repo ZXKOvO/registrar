@@ -4,7 +4,7 @@
 //
 import std;
 import registrar;
-import main_ui;
+import ui;
 
 int main()
 {

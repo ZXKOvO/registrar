@@ -3,7 +3,7 @@
 // Created: 2026-01-17   Id:2024051604015   xxh
 // Description: 教学秘书模块 - 管理学生、教师、课程和生成报告
 //
-export module registrar:academic_secretary;
+export module academic_secretary;
 import registrar;
 import std;
 using std::string;
