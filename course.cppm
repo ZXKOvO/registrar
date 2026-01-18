@@ -8,6 +8,7 @@ import std;
 //
 using std::string;
 using std::vector;
+using std::print;
 
 export class Course
 {

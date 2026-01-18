@@ -1,5 +1,7 @@
 export module test;
 import std;
+using std::print;
+
 export void hello() {
-    std::print("Hello from std module!\n");
+    print("Hello from std module!\n");
 }

@@ -17,6 +17,12 @@ export import :teacher;
 export import :grade;
 export import :teaching_task;
 
+using std::string;
+using std::vector;
+using std::format;
+using std::print;
+using std::println;
+
 export class Registrar
 {
 public:
@@ -75,27 +81,27 @@ void Registrar::studentDropsCourse(std::string sid, std::string cid){
 
 void Registrar::courseRoster(std::string cid){
     auto c = findCourseById(cid);
-    std::print("{}\n",c->roster());
+    print("{}\n",c->roster());
 }
 
 void Registrar::studentSchedule(std::string sid){
     auto s = findStudentById(sid);
     if(s){
-        std::print("{}\n",s->schedule());
+        print("{}\n",s->schedule());
     }
 }
 
 void Registrar::teacherSchedule(std::string tid){
     auto t = findTeacherById(tid);
     if(t){
-        std::print("{}\n",t->schedule());
+        print("{}\n",t->schedule());
     }
 }
 
 void Registrar::teacherRoster(std::string tid){
     auto t = findTeacherById(tid);
     if(t){
-        std::print("{}\n",t->roster());
+        print("{}\n",t->roster());
     }
 }
 
@@ -107,11 +113,11 @@ void Registrar::initialize(){
     _students.push_back(new Student("S004","Tom"));
     _students.push_back(new Student("S005","Musk"));
     
-    std::print("student list:\n sid student\n");
+    print("student list:\n sid student\n");
     for(auto &s:_students){
-            std::print("{}",s->info());
+            print("{}",s->info());
         }
-        std::println();
+        println();
         
     // Create teachers
     _teachers.push_back(new Teacher("T001","Smith"));
@@ -137,11 +143,11 @@ void Registrar::initialize(){
     if (t2) t2->assignToCourse(_courses[1]);
     if (t3) t3->assignToCourse(_courses[2]);
     
-    std::print("course list:\n cid  course\n");
+    print("course list:\n cid  course\n");
     for(auto &c:_courses){
-            std::print("{}",c->info());
+            print("{}",c->info());
         }
-        std::println();
+        println();
 }
 
 Registrar::Registrar(){}

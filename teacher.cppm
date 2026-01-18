@@ -8,6 +8,7 @@ import :grade;
 import std;
 using std::string;
 using std::vector;
+using std::print;
 
 export class Teacher
 {
@@ -20,11 +21,11 @@ public:
     string schedule();
     string roster();
     void displayCourseInfo(int& count);
+    void displayGrades();
+    Grade* findGradesByStudent(string studentId);
     class Grade* gradeCourse(string studentId, string courseId, double score, string comment = "");
-    void forEachGrade(void (*func)(Grade*));
     class Grade* findGrade(string studentId, string courseId);
     class Grade* updateGrade(string studentId, string courseId, double score, string comment);
-    vector<Grade*>& getGrades();
     bool authenticate(string password);
 
 private:
@@ -110,17 +111,32 @@ class Grade* Teacher::gradeCourse(string studentId, string courseId, double scor
     return grade;
 }
 
-void Teacher::forEachGrade(void (*func)(Grade*))
+void Teacher::displayGrades()
 {
-    for (auto& grade : _grades)
-    {
-        func(grade);
+    print("教师: {}\n", info());
+    print("\n=== 成绩列表 ===\n");
+    print("学生ID\t课程ID\t成绩\t评语\n");
+    print("----------------------------------------\n");
+    
+    bool found = false;
+    for (auto& grade : _grades) {
+        print("{}", grade->info());
+        found = true;
+    }
+    
+    if (!found) {
+        print("暂无成绩记录\n");
     }
 }
 
-vector<Grade*>& Teacher::getGrades()
+Grade* Teacher::findGradesByStudent(string studentId)
 {
-    return _grades;
+    for (auto& grade : _grades) {
+        if (grade->matches(studentId, "")) {
+            return grade;
+        }
+    }
+    return nullptr;
 }
 
 class Grade* Teacher::findGrade(string studentId, string courseId)

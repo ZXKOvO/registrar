@@ -18,11 +18,18 @@ add_executable(registrar
 set(MODULE_INTERFACE_FILES
     #${MODULE_LIB_DIR1}/utils.cppm         #添加模块库的模块接口单元
     #math.cppm
+    teaching_task.cppm
+    registrar_core.cppm
     student.cppm
     registrar.cppm
     course.cppm
     teacher.cppm
     grade.cppm
+    academic_secretary.cppm
+    student_controller.cppm
+    teacher_controller.cppm
+    secretary_controller.cppm
+    authentication_controller.cppm
     ui.cppm
 )
 

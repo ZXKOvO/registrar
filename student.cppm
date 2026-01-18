@@ -74,3 +74,16 @@ bool Student::authenticate(string password)
 {
     return m_password == password;
 }
+
+string Student::schedule()
+{
+    auto rst = format("{} ({}) 的课程表:\n",m_name,m_id);
+    if(_courses.empty()){
+        rst += "  (未选课)\n";
+    }else{
+        for(auto c:_courses){
+            rst +=c->info();
+        }
+    }
+    return rst;
+}
