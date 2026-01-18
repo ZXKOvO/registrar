@@ -164,6 +164,10 @@ void UI::loginInterface()
         displayMessage("登录成功！");
         pause();
         
+        // 清除输入缓冲区
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
         switch (_currentUserType)
         {
             case UserTypes::STUDENT:
@@ -189,13 +193,20 @@ bool UI::authenticateUser(string id, string password, UserTypes type)
     switch (type)
     {
         case UserTypes::STUDENT:
-            return _registrar.findStudentById(id) != nullptr;
+        {
+            auto student = _registrar.findStudentById(id);
+            return student != nullptr && student->authenticate(password);
+        }
         case UserTypes::TEACHER:
-            return _registrar.findTeacherById(id) != nullptr;
+        {
+            auto teacher = _registrar.findTeacherById(id);
+            return teacher != nullptr && teacher->authenticate(password);
+        }
         case UserTypes::SECRETARY:
-            // 教学秘书暂时简化验证，只检查ID是否存在
-            // 实际应用中应该有专门的秘书管理
-            return true; // 暂时允许任何秘书登录
+        {
+            auto secretary = _registrar.findSecretaryById(id);
+            return secretary != nullptr && secretary->authenticate(password);
+        }
         default:
             return false;
     }
@@ -319,9 +330,10 @@ void UI::showTeacherMenu()
         if (!(std::cin >> choice))
         {
             // 输入失败，可能是EOF，返回主菜单
+            clearInputBuffer();
             return;
         }
-        clearInputBuffer();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         switch (choice)
         {
@@ -350,7 +362,22 @@ void UI::teacherScheduleInterface()
     std::print("          教师课程表\n");
     std::print("========================================\n");
     
-    _registrar.teacherSchedule(_currentUserId);
+    auto teacher = _registrar.findTeacherById(_currentUserId);
+    if (teacher) {
+        std::print("教师信息:\n");
+        std::print("{}\n", teacher->info());
+        
+        std::print("\n授课安排:\n");
+        auto schedule = teacher->schedule();
+        std::print("{}\n", schedule);
+        
+        if (schedule.empty() || schedule.find("(未安排课程)") != string::npos) {
+            std::print("提示：该教师暂无授课安排\n");
+        }
+    } else {
+        std::print("错误：未找到教师信息！\n");
+    }
+    
     pause();
 }
 
@@ -361,11 +388,25 @@ void UI::teacherRosterInterface()
     std::print("          学生名单\n");
     std::print("========================================\n");
     
-    std::print("请输入课程ID: ");
-    string courseId;
-    std::getline(std::cin, courseId);
-    
-    _registrar.courseRoster(courseId);
+    // 首先显示该教师教授的所有课程
+    auto teacher = _registrar.findTeacherById(_currentUserId);
+    if (teacher) {
+        std::print("您教授的课程:\n");
+        std::print("{}\n", teacher->schedule());
+        
+        std::print("\n请输入要查看学生名单的课程ID: ");
+        string courseId;
+        std::getline(std::cin, courseId);
+        
+        // 验证该教师是否教授此课程
+        if (teacher->hasCourse(courseId)) {
+            _registrar.courseRoster(courseId);
+        } else {
+            std::print("错误：您没有教授课程 {}！\n", courseId);
+        }
+    } else {
+        std::print("错误：未找到教师信息！\n");
+    }
     pause();
 }
 
@@ -454,8 +495,14 @@ void UI::secretaryStudentManagement()
                 string id;
                 std::print("请输入要删除的学生ID: ");
                 std::getline(std::cin, id);
-                _registrar.removeStudent(id);
-                displayMessage("学生删除成功！");
+                if (_registrar.removeStudent(id))
+                {
+                    displayMessage("学生删除成功！");
+                }
+                else
+                {
+                    displayMessage("删除失败！学生ID不存在。");
+                }
                 pause();
                 break;
             }
@@ -510,8 +557,14 @@ void UI::secretaryTeacherManagement()
                 string id;
                 std::print("请输入要删除的教师ID: ");
                 std::getline(std::cin, id);
-                _registrar.removeTeacher(id);
-                displayMessage("教师删除成功！");
+                if (_registrar.removeTeacher(id))
+                {
+                    displayMessage("教师删除成功！");
+                }
+                else
+                {
+                    displayMessage("删除失败！教师ID不存在。");
+                }
                 pause();
                 break;
             }
@@ -566,8 +619,14 @@ void UI::secretaryCourseManagement()
                 string id;
                 std::print("请输入要删除的课程ID: ");
                 std::getline(std::cin, id);
-                _registrar.removeCourse(id);
-                displayMessage("课程删除成功！");
+                if (_registrar.removeCourse(id))
+                {
+                    displayMessage("课程删除成功！");
+                }
+                else
+                {
+                    displayMessage("删除失败！课程ID不存在。");
+                }
                 pause();
                 break;
             }
@@ -734,7 +793,12 @@ void UI::teacherGradeInterface()
         std::print("请选择: ");
 
         int choice;
-        std::cin >> choice;
+        if (!(std::cin >> choice))
+        {
+            // 输入失败，可能是EOF，返回教师菜单
+            clearInputBuffer();
+            return;
+        }
         std::cin.ignore();
 
         switch (choice)
@@ -764,35 +828,32 @@ void UI::teacherAddGrade()
     std::print("            录入成绩\n");
     std::print("========================================\n");
 
+    // 显示教师教授的课程
+    auto teacher = _registrar.findTeacherById(_currentUserId);
+    if (!teacher)
+    {
+        displayMessage("教师信息未找到！");
+        pause();
+        return;
+    }
+
+    std::print("您教授的课程:\n");
+    std::print("{}\n", teacher->schedule());
+
     string studentId, courseId;
     double score;
     string comment;
 
-    std::print("请输入学生ID: ");
+    std::print("\n请输入学生ID: ");
     std::getline(std::cin, studentId);
 
     std::print("请输入课程ID: ");
     std::getline(std::cin, courseId);
 
-    std::print("请输入成绩(0-100): ");
-    std::cin >> score;
-    std::cin.ignore();
-
-    std::print("请输入评语(可选): ");
-    std::getline(std::cin, comment);
-
     // 验证输入
-    if (score < 0 || score > 100)
+    if (studentId.empty() || courseId.empty())
     {
-        displayMessage("成绩必须在0-100之间！");
-        pause();
-        return;
-    }
-
-    auto teacher = _registrar.findTeacherById(_currentUserId);
-    if (!teacher)
-    {
-        displayMessage("教师信息未找到！");
+        displayMessage("学生ID和课程ID不能为空！");
         pause();
         return;
     }
@@ -805,7 +866,7 @@ void UI::teacherAddGrade()
         return;
     }
 
-    // 检查学生是否选修了该课程
+    // 检查学生是否存在
     auto student = _registrar.findStudentById(studentId);
     if (!student)
     {
@@ -814,10 +875,50 @@ void UI::teacherAddGrade()
         return;
     }
 
+    // 检查课程是否存在
     auto course = _registrar.findCourseById(courseId);
     if (!course)
     {
         displayMessage("课程不存在！");
+        pause();
+        return;
+    }
+
+    // 检查学生是否选了该课程
+    if (!student->hasCourse(courseId))
+    {
+        displayMessage("该学生未选修此课程，无法录入成绩！");
+        pause();
+        return;
+    }
+
+    // 检查是否已经录入过成绩
+    auto existingGrade = teacher->findGrade(studentId, courseId);
+    if (existingGrade)
+    {
+        displayMessage("该学生此课程的成绩已存在，请使用修改成绩功能！");
+        pause();
+        return;
+    }
+
+    std::print("请输入成绩(0-100): ");
+    if (!(std::cin >> score))
+    {
+        displayMessage("成绩输入无效！");
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        pause();
+        return;
+    }
+    std::cin.ignore();
+
+    std::print("请输入评语(可选): ");
+    std::getline(std::cin, comment);
+
+    // 验证输入
+    if (score < 0 || score > 100)
+    {
+        displayMessage("成绩必须在0-100之间！");
         pause();
         return;
     }
@@ -835,18 +936,70 @@ void UI::teacherUpdateGrade()
     std::print("            修改成绩\n");
     std::print("========================================\n");
 
+    // 显示教师教授的课程
+    auto teacher = _registrar.findTeacherById(_currentUserId);
+    if (!teacher)
+    {
+        displayMessage("教师信息未找到！");
+        pause();
+        return;
+    }
+
+    std::print("您教授的课程:\n");
+    std::print("{}\n", teacher->schedule());
+
+    // 显示已有成绩
+    std::print("\n已有成绩记录:\n");
+    auto& grades = teacher->getGrades();
+    bool hasGrades = false;
+    for (auto& grade : grades)
+    {
+        std::print("{}", grade->info());
+        hasGrades = true;
+    }
+    
+    if (!hasGrades)
+    {
+        displayMessage("暂无成绩记录，请先录入成绩！");
+        pause();
+        return;
+    }
+
     string studentId, courseId;
     double newScore;
     string newComment;
 
-    std::print("请输入学生ID: ");
+    std::print("\n请输入学生ID: ");
     std::getline(std::cin, studentId);
 
     std::print("请输入课程ID: ");
     std::getline(std::cin, courseId);
 
+    // 验证输入
+    if (studentId.empty() || courseId.empty())
+    {
+        displayMessage("学生ID和课程ID不能为空！");
+        pause();
+        return;
+    }
+
+    // 检查教师是否教授该课程
+    if (!teacher->hasCourse(courseId))
+    {
+        displayMessage("您没有教授该课程！");
+        pause();
+        return;
+    }
+
     std::print("请输入新成绩(0-100): ");
-    std::cin >> newScore;
+    if (!(std::cin >> newScore))
+    {
+        displayMessage("成绩输入无效！");
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        pause();
+        return;
+    }
     std::cin.ignore();
 
     std::print("请输入新评语(可选): ");
@@ -856,14 +1009,6 @@ void UI::teacherUpdateGrade()
     if (newScore < 0 || newScore > 100)
     {
         displayMessage("成绩必须在0-100之间！");
-        pause();
-        return;
-    }
-
-    auto teacher = _registrar.findTeacherById(_currentUserId);
-    if (!teacher)
-    {
-        displayMessage("教师信息未找到！");
         pause();
         return;
     }

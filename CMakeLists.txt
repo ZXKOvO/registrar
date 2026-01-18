@@ -23,9 +23,7 @@ set(MODULE_INTERFACE_FILES
     course.cppm
     teacher.cppm
     grade.cppm
-    teaching_task.cppm
     ui.cppm
-    academic_secretary.cppm
 )
 
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})
@@ -36,9 +34,6 @@ target_sources(registrar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
     FILES ${MODULE_INTERFACE_FILES}
 )
 target_compile_features(registrar PRIVATE cxx_std_23)
-target_compile_options(registrar PRIVATE -fabi-version=0)
-
-
 
 
 

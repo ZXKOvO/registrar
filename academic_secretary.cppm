@@ -3,12 +3,14 @@
 // Created: 2026-01-17   Id:2024051604015   xxh
 // Description: 教学秘书模块 - 管理学生、教师、课程和生成报告
 //
-export module academic_secretary;
-import registrar;
+export module registrar:academic_secretary;
 import std;
 using std::string;
 using std::vector;
 using std::print;
+
+// 前向声明Registrar类
+class Registrar;
 
 // 教学秘书类 - 负责教务管理工作
 export class AcademicSecretary
@@ -21,30 +23,30 @@ public:
     bool authenticate(string password);
     
     // 学生管理
-    void addNewStudent(string id, string name);
-    void removeStudent(string id);
+    void addNewStudent(Registrar& registrar, string id, string name);
+    void removeStudent(Registrar& registrar, string id);
     
     // 教师管理
-    void addNewTeacher(string id, string name);
-    void removeTeacher(string id);
+    void addNewTeacher(Registrar& registrar, string id, string name);
+    void removeTeacher(Registrar& registrar, string id);
     
     // 课程管理
-    void addNewCourse(string id, string name);
-    void removeCourse(string id);
+    void addNewCourse(Registrar& registrar, string id, string name);
+    void removeCourse(Registrar& registrar, string id);
     
     // 教学任务管理
-    void assignTeachingTask(string teacherId, string courseId, string semester, string timeSlot, string classroom);
-    void removeTeachingTask(string teacherId, string courseId);
+    void assignTeachingTask(Registrar& registrar, string teacherId, string courseId, string semester, string timeSlot, string classroom);
+    void removeTeachingTask(Registrar& registrar, string teacherId, string courseId);
     void viewTeachingTasks();
     
     // 报告生成
-    string generateEnrollmentStatistics();
-    string generateCourseStatistics();
-    string generateTeacherWorkload();
+    string generateEnrollmentStatistics(Registrar& registrar);
+    string generateCourseStatistics(Registrar& registrar);
+    string generateTeacherWorkload(Registrar& registrar);
     
     // 选课审批
-    void approveEnrollmentRequest(string studentId, string courseId);
-    void rejectEnrollmentRequest(string studentId, string courseId);
+    void approveEnrollmentRequest(Registrar& registrar, string studentId, string courseId);
+    void rejectEnrollmentRequest(Registrar& registrar, string studentId, string courseId);
     
     // 信息查询
     string info();
@@ -54,7 +56,6 @@ private:
     string _name;
     string _id;
     string _password;
-    Registrar& _registrar;
 };
 
 // ==================== 构造函数实现 ====================
@@ -63,7 +64,6 @@ AcademicSecretary::AcademicSecretary(string id, string name, string password)
     : _name(name)
     , _id(id)
     , _password(password)
-    , _registrar(Registrar::system())
 {}
 
 // ==================== 身份验证实现 ====================
@@ -75,81 +75,81 @@ bool AcademicSecretary::authenticate(string password)
 
 // ==================== 学生管理实现 ====================
 
-void AcademicSecretary::addNewStudent(string id, string name)
+void AcademicSecretary::addNewStudent(Registrar& registrar, string id, string name)
 {
-    if (_registrar.findStudentById(id)) {
+    if (registrar.findStudentById(id)) {
         print("学生ID {} 已存在，添加失败！\n", id);
         return;
     }
-    _registrar.addStudent(id, name);
+    registrar.addStudent(id, name);
     print("成功添加学生: {} ({})\n", name, id);
 }
 
-void AcademicSecretary::removeStudent(string id)
+void AcademicSecretary::removeStudent(Registrar& registrar, string id)
 {
-    if (!_registrar.findStudentById(id)) {
+    if (!registrar.findStudentById(id)) {
         print("学生ID {} 不存在，删除失败！\n", id);
         return;
     }
-    _registrar.removeStudent(id);
+    registrar.removeStudent(id);
     print("成功删除学生ID: {}\n", id);
 }
 
 // ==================== 教师管理实现 ====================
 
-void AcademicSecretary::addNewTeacher(string id, string name)
+void AcademicSecretary::addNewTeacher(Registrar& registrar, string id, string name)
 {
-    if (_registrar.findTeacherById(id)) {
+    if (registrar.findTeacherById(id)) {
         print("教师ID {} 已存在，添加失败！\n", id);
         return;
     }
-    _registrar.addTeacher(id, name);
+    registrar.addTeacher(id, name);
     print("成功添加教师: {} ({})\n", name, id);
 }
 
-void AcademicSecretary::removeTeacher(string id)
+void AcademicSecretary::removeTeacher(Registrar& registrar, string id)
 {
-    if (!_registrar.findTeacherById(id)) {
+    if (!registrar.findTeacherById(id)) {
         print("教师ID {} 不存在，删除失败！\n", id);
         return;
     }
-    _registrar.removeTeacher(id);
+    registrar.removeTeacher(id);
     print("成功删除教师ID: {}\n", id);
 }
 
 // ==================== 课程管理实现 ====================
 
-void AcademicSecretary::addNewCourse(string id, string name)
+void AcademicSecretary::addNewCourse(Registrar& registrar, string id, string name)
 {
-    if (_registrar.findCourseById(id)) {
+    if (registrar.findCourseById(id)) {
         print("课程ID {} 已存在，添加失败！\n", id);
         return;
     }
-    _registrar.addCourse(id, name);
+    registrar.addCourse(id, name);
     print("成功添加课程: {} ({})\n", name, id);
 }
 
-void AcademicSecretary::removeCourse(string id)
+void AcademicSecretary::removeCourse(Registrar& registrar, string id)
 {
-    if (!_registrar.findCourseById(id)) {
+    if (!registrar.findCourseById(id)) {
         print("课程ID {} 不存在，删除失败！\n", id);
         return;
     }
-    _registrar.removeCourse(id);
+    registrar.removeCourse(id);
     print("成功删除课程ID: {}\n", id);
 }
 
 // ==================== 教学任务管理实现 ====================
 
-void AcademicSecretary::assignTeachingTask(string teacherId, string courseId, string semester, string timeSlot, string classroom)
+void AcademicSecretary::assignTeachingTask(Registrar& registrar, string teacherId, string courseId, string semester, string timeSlot, string classroom)
 {
     // 检查教师是否存在
-    if (!_registrar.findTeacherById(teacherId)) {
+    if (!registrar.findTeacherById(teacherId)) {
         print("教师ID {} 不存在，分配失败！\n", teacherId);
         return;
     }
     // 检查课程是否存在
-    if (!_registrar.findCourseById(courseId)) {
+    if (!registrar.findCourseById(courseId)) {
         print("课程ID {} 不存在，分配失败！\n", courseId);
         return;
     }
@@ -158,15 +158,15 @@ void AcademicSecretary::assignTeachingTask(string teacherId, string courseId, st
           teacherId, courseId, semester, timeSlot, classroom);
 }
 
-void AcademicSecretary::removeTeachingTask(string teacherId, string courseId)
+void AcademicSecretary::removeTeachingTask(Registrar& registrar, string teacherId, string courseId)
 {
     // 检查教师是否存在
-    if (!_registrar.findTeacherById(teacherId)) {
+    if (!registrar.findTeacherById(teacherId)) {
         print("教师ID {} 不存在，删除失败！\n", teacherId);
         return;
     }
     // 检查课程是否存在
-    if (!_registrar.findCourseById(courseId)) {
+    if (!registrar.findCourseById(courseId)) {
         print("课程ID {} 不存在，删除失败！\n", courseId);
         return;
     }
@@ -186,42 +186,42 @@ void AcademicSecretary::viewTeachingTasks()
 
 // ==================== 报告生成实现 ====================
 
-string AcademicSecretary::generateEnrollmentStatistics()
+string AcademicSecretary::generateEnrollmentStatistics(Registrar& registrar)
 {
     return format("========================================\n"
                   "选课统计报告\n"
                   "========================================\n"
                   "{}"
                   "========================================\n", 
-                  _registrar.generateEnrollmentReport());
+                  registrar.generateEnrollmentReport());
 }
 
-string AcademicSecretary::generateCourseStatistics()
+string AcademicSecretary::generateCourseStatistics(Registrar& registrar)
 {
     return format("========================================\n"
                   "课程统计报告\n"
                   "========================================\n"
                   "{}"
                   "========================================\n", 
-                  _registrar.generateCourseReport());
+                  registrar.generateCourseReport());
 }
 
-string AcademicSecretary::generateTeacherWorkload()
+string AcademicSecretary::generateTeacherWorkload(Registrar& registrar)
 {
     return format("========================================\n"
                   "教师工作量报告\n"
                   "========================================\n"
                   "{}"
                   "========================================\n", 
-                  _registrar.generateTeacherReport());
+                  registrar.generateTeacherReport());
 }
 
 // ==================== 选课审批实现 ====================
 
-void AcademicSecretary::approveEnrollmentRequest(string studentId, string courseId)
+void AcademicSecretary::approveEnrollmentRequest(Registrar& registrar, string studentId, string courseId)
 {
-    auto student = _registrar.findStudentById(studentId);
-    auto course = _registrar.findCourseById(courseId);
+    auto student = registrar.findStudentById(studentId);
+    auto course = registrar.findCourseById(courseId);
 
     if (!student) {
         print("学生ID {} 不存在，审批失败！\n", studentId);
@@ -239,14 +239,14 @@ void AcademicSecretary::approveEnrollmentRequest(string studentId, string course
         return;
     }
 
-    _registrar.studentEnrollsInCourse(studentId, courseId);
+    registrar.studentEnrollsInCourse(studentId, courseId);
     print("已批准学生 {} 选课 {}\n", studentId, courseId);
 }
 
-void AcademicSecretary::rejectEnrollmentRequest(string studentId, string courseId)
+void AcademicSecretary::rejectEnrollmentRequest(Registrar& registrar, string studentId, string courseId)
 {
-    auto student = _registrar.findStudentById(studentId);
-    auto course = _registrar.findCourseById(courseId);
+    auto student = registrar.findStudentById(studentId);
+    auto course = registrar.findCourseById(courseId);
     
     if (!student) {
         print("学生ID {} 不存在，拒绝失败！\n", studentId);
@@ -257,7 +257,7 @@ void AcademicSecretary::rejectEnrollmentRequest(string studentId, string courseI
         return;
     }
     
-    _registrar.studentDropsCourse(studentId, courseId);
+    registrar.studentDropsCourse(studentId, courseId);
     print("已拒绝学生 {} 选课 {}\n", studentId, courseId);
 }
 

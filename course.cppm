@@ -78,4 +78,20 @@ void Course::displayEnrollmentInfo(int& count, bool& full){
     full = _students.size() >= 80;
 }
 
+string Course::roster(){
+    string result = format("{} - 学生名单 (共{}人):\n", m_name, _students.size());
+    if (_students.empty()) {
+        result += "  (暂无学生选课)\n";
+    } else {
+        result += "  学生ID\t姓名\n";
+        result += "  ----------------\n";
+        // 由于循环依赖问题，这里只显示基本信息
+        // 实际应用中可以通过其他方式获取学生详细信息
+        result += "  (学生详细信息需要通过Registrar获取)\n";
+    }
+    return result;
+}
+
+
+
 

@@ -12,7 +12,7 @@ using std::vector;
 export class Teacher
 {
 public:
-    Teacher(string id, string name);
+    Teacher(string id, string name, string password = "");
     void assignToCourse(class Course* course);
     string info();
     bool hasId(string id);
@@ -25,17 +25,20 @@ public:
     class Grade* findGrade(string studentId, string courseId);
     class Grade* updateGrade(string studentId, string courseId, double score, string comment);
     vector<Grade*>& getGrades();
+    bool authenticate(string password);
 
 private:
     string m_name;
     string m_id;
+    string m_password;
     vector<class Course*> _courses;
     vector<class Grade*> _grades;
 };
 
-Teacher::Teacher(string id, string name)
+Teacher::Teacher(string id, string name, string password)
     : m_name(name)
     , m_id(id)
+    , m_password(password)
 {}
 
 string Teacher::info()
@@ -70,9 +73,16 @@ bool Teacher::hasCourse(string courseId)
 string Teacher::schedule()
 {
     auto result = std::format("{}'s teaching schedule:\n", m_name);
-    for (auto& c : _courses)
+    if (_courses.empty())
     {
-        result += c->info();
+        result += "(未安排课程)\n";
+    }
+    else
+    {
+        for (auto& c : _courses)
+        {
+            result += c->info();
+        }
     }
     return result;
 }
@@ -134,4 +144,9 @@ class Grade* Teacher::updateGrade(string studentId, string courseId, double scor
         return grade;
     }
     return nullptr;
+}
+
+bool Teacher::authenticate(string password)
+{
+    return m_password == password;
 }
