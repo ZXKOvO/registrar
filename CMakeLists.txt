@@ -12,12 +12,20 @@ add_executable(registrar
     #math.cpp                              # 模块实现单元
     main.cpp
 
+
 )
 
 set(MODULE_INTERFACE_FILES
     #${MODULE_LIB_DIR1}/utils.cppm         #添加模块库的模块接口单元
     #math.cppm
-     student.cppm registrar.cppm course.cppm# 模块接口单元
+    student.cppm
+    registrar.cppm
+    course.cppm
+
+    grade.cppm
+    teacher.cppm
+
+    ui.cppm# 模块接口单元
 )
 
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})

@@ -1,51 +1,20 @@
-// A registrar system demo
-// File: main.cpp   Version: 1.0      License: AGPLv3
-// Created: Wei Gong open-src@qq.com      2025-12-12
+// File: main.cpp   Version: 0.1.0   License: AGPLv3
+// Created:CCJ 2026-01-18
+// Description: 交互式UI入口程序
 //
-// Description:
-//     Testing the registrar system
-
-// Change Log:
-//     [v1.1] Wei Gong open-src@qq.com   2025-12-12 17:57:41
-//         * simulating student course registration, viewing course enrollment lists
-//     [v1.2] Wei Gong open-src@qq.com   2025-12-12 18:07:17
-//         * simulating view student schedule
-import registrar;
 import std;
+import registrar;
+import ui;
 
 int main()
 {
-    // alias for static function Registrar::singleton
-    auto system = &Registrar::singleton;
+    // 初始化系统
+    auto& system = Registrar::system();
+    system.initialize();
 
-    system().initialize();
-
-    // Simulate some students erolls in some courses
-    system().studentEnrollsInCourse("S001", "CS101");
-    system().studentEnrollsInCourse("S001", "CS201");
-    system().studentEnrollsInCourse("S001", "MATH101");
-
-    system().studentEnrollsInCourse("S002", "CS101");
-    system().studentEnrollsInCourse("S002", "MATH101");
-
-    system().studentEnrollsInCourse("S003", "CS201");
-    system().studentEnrollsInCourse("S003", "MATH101");
-
-
-    system().studentEnrollsInCourse("S004", "CS101");
-    system().studentEnrollsInCourse("S004", "CS201");
-
-    system().studentEnrollsInCourse("S005", "CS201");
-
-    std::println();
-
-    system().courseRoster("CS101");
-    system().courseRoster("CS201");
-    system().courseRoster("MATH101");
-
-    system().studentSchedule("S001");
-
-    system().studentSchedule("S003");
+    // 创建UI实例并显示主菜单
+    UI ui;
+    ui.showMainMenu();
 
     return 0;
 }
