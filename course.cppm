@@ -94,7 +94,7 @@ string Course::roster(){
         result += "  ----------------\n";
         // 由于循环依赖问题，这里只显示基本信息
         // 实际应用中可以通过其他方式获取学生详细信息
-        result += "  (学生详细信息需要通过Registrar获取)\n";
+        //result += "  (学生详细信息需要通过Registrar获取)\n";
     }
     return result;
 }
