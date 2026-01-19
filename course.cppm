@@ -8,7 +8,6 @@ import std;
 //
 using std::string;
 using std::vector;
-using std::print;
 
 export class Course
 {
@@ -21,7 +20,6 @@ public:
     bool hasId(string id);
     void assignTeacher(class Teacher* teacher);
     void displayEnrollmentInfo(int& count, bool& full);
-    string identifier() const;
 
 private:
     string m_name;
@@ -72,12 +70,7 @@ bool Course::hasId(string id){
 }
 
 void Course::assignTeacher(Teacher* teacher){
-    // 注意：这里无法直接获取teacher的ID，因为存在循环依赖
-    // 这个问题需要在更高层次解决，比如在registrar_core中设置教师ID
-}
-
-string Course::identifier() const {
-    return m_id;
+    _teacher = teacher;
 }
 
 void Course::displayEnrollmentInfo(int& count, bool& full){
@@ -94,7 +87,7 @@ string Course::roster(){
         result += "  ----------------\n";
         // 由于循环依赖问题，这里只显示基本信息
         // 实际应用中可以通过其他方式获取学生详细信息
-        //result += "  (学生详细信息需要通过Registrar获取)\n";
+        result += "  (学生详细信息需要通过Registrar获取)\n";
     }
     return result;
 }
