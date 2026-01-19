@@ -46,6 +46,7 @@ target_sources(registrar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
         #${MODULE_LIB_DIR1}
         ${CMAKE_CURRENT_SOURCE_DIR}
     FILES ${MODULE_INTERFACE_FILES}
+
 )
 target_compile_features(registrar PRIVATE cxx_std_23)
 target_link_libraries(registrar PRIVATE PostgreSQL::PostgreSQL)
