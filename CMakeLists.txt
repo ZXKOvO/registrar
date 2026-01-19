@@ -7,30 +7,37 @@ set(CMAKE_CXX_MODULE_STD ON)
 
 project(registrar LANGUAGES CXX)
 
-# set(MODULE_LIB_DIR1 /opt/utils/modules)  # 模块库的目录的设置
-add_executable(registrar
-    #math.cpp                              # 模块实现单元
-    main.cpp
+# 查找PostgreSQL
+find_package(PostgreSQL REQUIRED)
 
-)
+add_executable(registrar main.cpp)
 
 
 set(MODULE_INTERFACE_FILES
     #${MODULE_LIB_DIR1}/utils.cppm         #添加模块库的模块接口单元
     #math.cppm
-    teaching_task.cppm
-    registrar_core.cppm
+    # 基础实体模块
     student.cppm
-    registrar.cppm
-    course.cppm
     teacher.cppm
+    course.cppm
     grade.cppm
+    teaching_task.cppm
     academic_secretary.cppm
+    enrollment.cppm
+    # 数据管理层
+    data_manager.cppm
+    data_manager_impl.cppm
+    # 核心业务逻辑
+    registrar_core.cppm
+    # 控制器层
     student_controller.cppm
     teacher_controller.cppm
     secretary_controller.cppm
     authentication_controller.cppm
+    # UI层
     ui.cppm
+    # 主模块
+    registrar.cppm
 )
 
 source_group("Module Interfaces" FILES ${MODULE_INTERFACE_FILES})
@@ -41,6 +48,7 @@ target_sources(registrar  PRIVATE FILE_SET cxx_modules TYPE CXX_MODULES
     FILES ${MODULE_INTERFACE_FILES}
 )
 target_compile_features(registrar PRIVATE cxx_std_23)
+target_link_libraries(registrar PRIVATE PostgreSQL::PostgreSQL)
 
 
 

@@ -21,6 +21,7 @@ public:
     bool hasId(string id);
     void assignTeacher(class Teacher* teacher);
     void displayEnrollmentInfo(int& count, bool& full);
+    string identifier() const;
 
 private:
     string m_name;
@@ -71,7 +72,12 @@ bool Course::hasId(string id){
 }
 
 void Course::assignTeacher(Teacher* teacher){
-    _teacher = teacher;
+    // 注意：这里无法直接获取teacher的ID，因为存在循环依赖
+    // 这个问题需要在更高层次解决，比如在registrar_core中设置教师ID
+}
+
+string Course::identifier() const {
+    return m_id;
 }
 
 void Course::displayEnrollmentInfo(int& count, bool& full){

@@ -203,10 +203,14 @@ bool SecretaryController::assignTeachingTask(string teacherId, string courseId,
         return false;
     }
     
-    // TODO: 实际保存教学任务到数据库
-    // 这里可以创建TeachingTask对象并保存
-    print("已为教师 {} 分配课程 {} 的教学任务：学期 {} 时间 {} 教室 {}\n", 
-              teacherId, courseId, semester, timeSlot, classroom);
+    // 创建新的教学任务并保存到数据库
+    auto newTask = new TeachingTask(teacherId, courseId, semester, timeSlot, classroom);
+    _registrar.addTeachingTask(newTask);
+    
+    print("已为教师 {} 分配课程 {} 的教学任务\n", teacherId, courseId);
+    print("  学期: {}\n", semester);
+    print("  时间: {}\n", timeSlot);
+    print("  教室: {}\n", classroom);
     
     return true;
 }
@@ -225,8 +229,13 @@ bool SecretaryController::removeTeachingTask(string teacherId, string courseId)
         return false;
     }
     
-    // TODO: 实际删除教学任务
-    print("已删除教师 {} 课程 {} 的教学任务\n", teacherId, courseId);
+    // 查找并删除教学任务
+    bool removed = _registrar.removeTeachingTask(teacherId, courseId);
+    if (removed) {
+        print("已删除教师 {} 课程 {} 的教学任务\n", teacherId, courseId);
+    } else {
+        print("错误：未找到教师 {} 课程 {} 的教学任务\n", teacherId, courseId);
+    }
     
     return true;
 }
@@ -236,7 +245,24 @@ void SecretaryController::displayTeachingTasks()
     print("========================================\n");
     print("所有教学任务\n");
     print("========================================\n");
-    print("（教学任务列表功能待实现）\n");
+    
+    auto tasks = _registrar.getTeachingTasks();
+    if (tasks.empty()) {
+        print("暂无教学任务\n");
+    } else {
+        print("序号\t教师ID\t课程ID\t学期\t时间\t教室\n");
+        print("----------------------------------------\n");
+        int index = 1;
+        for (auto task : tasks) {
+            print("{}\t{}\t{}\t{}\t{}\t{}\n", 
+                      index++, 
+                      task->assignedTeacherId(),
+                      task->assignedCourseId(),
+                      task->scheduledSemester(),
+                      task->scheduledTimeSlot(),
+                      task->assignedClassroom());
+        }
+    }
     print("========================================\n");
 }
 

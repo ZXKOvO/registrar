@@ -12,6 +12,8 @@ export import :teacher;
 export import :grade;
 export import :academic_secretary;
 export import :teaching_task;
+export import :enrollment;
+export import :data_manager;
 export import :student_controller;
 export import :teacher_controller;
 export import :secretary_controller;

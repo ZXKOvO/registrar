@@ -16,12 +16,16 @@ public:
     Teacher(string id, string name, string password = "");
     void assignToCourse(class Course* course);
     string info();
+    string getId() const;
     bool hasId(string id);
     bool hasCourse(string courseId);
     string schedule();
     string roster();
     void displayCourseInfo(int& count);
     void displayGrades();
+    
+    // 设置课程信息（用于从数据库加载）
+    void setCourses(const vector<class Course*>& courses);
     Grade* findGradesByStudent(string studentId);
     class Grade* gradeCourse(string studentId, string courseId, double score, string comment = "");
     class Grade* findGrade(string studentId, string courseId);
@@ -47,6 +51,11 @@ string Teacher::info()
     return std::format("{}   {}\n", m_id, m_name);
 }
 
+string Teacher::getId() const
+{
+    return m_id;
+}
+
 bool Teacher::hasId(string id)
 {
     return id == m_id;
@@ -55,6 +64,11 @@ bool Teacher::hasId(string id)
 void Teacher::assignToCourse(class Course* course)
 {
     _courses.push_back(course);
+}
+
+void Teacher::setCourses(const vector<class Course*>& courses)
+{
+    _courses = courses;
 }
 
 
@@ -74,17 +88,20 @@ bool Teacher::hasCourse(string courseId)
 string Teacher::schedule()
 {
     auto result = std::format("{}'s teaching schedule:\n", m_name);
-    if (_courses.empty())
-    {
-        result += "(未安排课程)\n";
-    }
-    else
+    
+    // 如果内存中有课程信息，使用内存中的信息
+    if (!_courses.empty())
     {
         for (auto& c : _courses)
         {
             result += c->info();
         }
     }
+    else
+    {
+        result += "(未安排课程)\n";
+    }
+    
     return result;
 }
 

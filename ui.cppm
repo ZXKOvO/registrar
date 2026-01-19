@@ -30,6 +30,7 @@ public:
     void secretaryStudentManagement();
     void secretaryTeacherManagement();
     void secretaryCourseManagement();
+    void secretaryTeachingTaskManagement();
     void secretaryReportInterface();
     void loginInterface(UserTypes userType);
     void displayReport(string report);
@@ -130,8 +131,9 @@ void UI::showMainMenu()
                 displayMessage("无效的选择，请重新输入！");
                 pause();
         }
-    }
-}
+        }
+        
+        }
 
 void UI::loginInterface(UserTypes userType)
 {
@@ -151,9 +153,7 @@ void UI::loginInterface(UserTypes userType)
         displayMessage("登录成功！");
         pause();
         
-        // 清除输入缓冲区
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        // 不清除输入缓冲区，直接进入菜单
         
         switch (userType)
         {
@@ -381,7 +381,8 @@ void UI::showSecretaryMenu()
         print("1. 学生管理\n");
         print("2. 教师管理\n");
         print("3. 课程管理\n");
-        print("4. 报表生成\n");
+        print("4. 教学任务管理\n");
+        print("5. 报表生成\n");
         print("0. 返回主菜单\n");
         print("========================================\n");
         print("请选择: ");
@@ -390,7 +391,7 @@ void UI::showSecretaryMenu()
         std::cin >> choice;
         std::cin.ignore();
         
-        switch (choice)
+switch (choice)
         {
             case 1:
                 secretaryStudentManagement();
@@ -402,13 +403,17 @@ void UI::showSecretaryMenu()
                 secretaryCourseManagement();
                 break;
             case 4:
+                secretaryTeachingTaskManagement();
+                break;
+            case 5:
                 secretaryReportInterface();
                 break;
             case 0:
                 return;
             default:
-                displayMessage("无效的选择，请重新输入！");
+                print("无效选择，请重新输入。\n");
                 pause();
+                break;
         }
     }
 }
@@ -619,6 +624,83 @@ void UI::secretaryReportInterface()
             default:
                 displayMessage("无效的选择，请重新输入！");
                 pause();
+        }
+    }
+}
+
+void UI::secretaryTeachingTaskManagement()
+{
+    while (true)
+    {
+        clearScreen();
+        print("========================================\n");
+        print("        教学任务管理\n");
+        print("========================================\n");
+        print("1. 分配教学任务\n");
+        print("2. 删除教学任务\n");
+        print("3. 查看所有教学任务\n");
+        print("0. 返回\n");
+        print("========================================\n");
+        print("请选择: ");
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice)
+        {
+            case 1:
+            {
+                string teacherId, courseId, semester, timeSlot, classroom;
+                print("请输入教师ID: ");
+                std::getline(std::cin, teacherId);
+                print("请输入课程ID: ");
+                std::getline(std::cin, courseId);
+                print("请输入学期: ");
+                std::getline(std::cin, semester);
+                print("请输入时间段: ");
+                std::getline(std::cin, timeSlot);
+                print("请输入教室: ");
+                std::getline(std::cin, classroom);
+                
+                if (_secretaryController.assignTeachingTask(teacherId, courseId, semester, timeSlot, classroom))
+                {
+                    displayMessage("教学任务分配成功！");
+                }
+                else
+                {
+                    displayMessage("教学任务分配失败！");
+                }
+                break;
+            }
+            case 2:
+            {
+                string teacherId, courseId;
+                print("请输入教师ID: ");
+                std::getline(std::cin, teacherId);
+                print("请输入课程ID: ");
+                std::getline(std::cin, courseId);
+                
+                if (_secretaryController.removeTeachingTask(teacherId, courseId))
+                {
+                    displayMessage("教学任务删除成功！");
+                }
+                else
+                {
+                    displayMessage("教学任务删除失败！");
+                }
+                break;
+            }
+            case 3:
+                _secretaryController.displayTeachingTasks();
+                pause();
+                break;
+            case 0:
+                return;
+            default:
+                displayMessage("无效选择，请重新输入！");
+                pause();
+                break;
         }
     }
 }
