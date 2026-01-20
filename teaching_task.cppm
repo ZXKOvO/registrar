@@ -18,6 +18,33 @@ public:
     // 获取教学任务的详细信息
     // 返回：格式化的教学任务信息字符串
     string info() const;
+    
+    // 检查是否匹配指定的教师ID和课程ID
+    bool matches(string teacherId, string courseId) const;
+    
+    // 检查是否匹配指定的教师ID
+    bool matchesTeacher(string teacherId) const;
+    
+    // 检查是否匹配指定的课程ID
+    bool matchesCourse(string courseId) const;
+    
+    // 检查是否匹配指定的学期
+    bool matchesSemester(string semester) const;
+    
+    // 提供教学任务的相关信息，而非直接的数据访问
+    string assignedTeacherId() const;
+    string assignedCourseId() const;
+    string scheduledSemester() const;
+    string scheduledTimeSlot() const;
+    string assignedClassroom() const;
+    
+    // 更新教学任务安排的方法，使用更具描述性的名称
+    TeachingTask withUpdatedSchedule(string newTimeSlot) const;
+    TeachingTask withUpdatedClassroom(string newClassroom) const;
+    TeachingTask withUpdatedSemester(string newSemester) const;
+    
+    // 格式化的时间段信息
+    string formattedSchedule() const;
 
 private:
     string _teacherId;      // 教师ID
@@ -39,6 +66,77 @@ TeachingTask::TeachingTask(string teacherId, string courseId, string semester, s
 // 获取教学任务详细信息
 string TeachingTask::info() const
 {
-    return format("教师: {} | 课程: {} | 学期: {} | 时间: {} | 教室: {}\n", 
+    return format("Teacher: {} | Course: {} | Semester: {} | Time: {} | Classroom: {}\n", 
                   _teacherId, _courseId, _semester, _timeSlot, _classroom);
+}
+
+// 检查是否匹配指定的教师ID和课程ID
+bool TeachingTask::matches(string teacherId, string courseId) const
+{
+    return _teacherId == teacherId && _courseId == courseId;
+}
+
+// 检查是否匹配指定的教师ID
+bool TeachingTask::matchesTeacher(string teacherId) const
+{
+    return _teacherId == teacherId;
+}
+
+// 检查是否匹配指定的课程ID
+bool TeachingTask::matchesCourse(string courseId) const
+{
+    return _courseId == courseId;
+}
+
+// 检查是否匹配指定的学期
+bool TeachingTask::matchesSemester(string semester) const
+{
+    return _semester == semester;
+}
+
+
+
+string TeachingTask::assignedTeacherId() const
+{
+    return _teacherId;
+}
+
+string TeachingTask::assignedCourseId() const
+{
+    return _courseId;
+}
+
+string TeachingTask::scheduledSemester() const
+{
+    return _semester;
+}
+
+string TeachingTask::scheduledTimeSlot() const
+{
+    return _timeSlot;
+}
+
+string TeachingTask::assignedClassroom() const
+{
+    return _classroom;
+}
+
+TeachingTask TeachingTask::withUpdatedSchedule(string newTimeSlot) const
+{
+    return TeachingTask(_teacherId, _courseId, _semester, newTimeSlot, _classroom);
+}
+
+TeachingTask TeachingTask::withUpdatedClassroom(string newClassroom) const
+{
+    return TeachingTask(_teacherId, _courseId, _semester, _timeSlot, newClassroom);
+}
+
+TeachingTask TeachingTask::withUpdatedSemester(string newSemester) const
+{
+    return TeachingTask(_teacherId, _courseId, newSemester, _timeSlot, _classroom);
+}
+
+string TeachingTask::formattedSchedule() const
+{
+    return format("{} | {} | {}", _timeSlot, _classroom, _semester);
 }

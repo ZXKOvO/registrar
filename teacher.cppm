@@ -8,6 +8,7 @@ import :grade;
 import std;
 using std::string;
 using std::vector;
+using std::print;
 
 export class Teacher
 {
@@ -15,17 +16,28 @@ public:
     Teacher(string id, string name, string password = "");
     void assignToCourse(class Course* course);
     string info();
+    string getId() const;
     bool hasId(string id);
     bool hasCourse(string courseId);
     string schedule();
     string roster();
+    
     void displayCourseInfo(int& count);
+    void displayGrades();
+    
+    // 设置课程信息（用于从数据库加载）
+    void setCourses(const vector<class Course*>& courses);
+    Grade* findGradesByStudent(string studentId);
     class Grade* gradeCourse(string studentId, string courseId, double score, string comment = "");
-    void forEachGrade(void (*func)(Grade*));
     class Grade* findGrade(string studentId, string courseId);
     class Grade* updateGrade(string studentId, string courseId, double score, string comment);
-    vector<Grade*>& getGrades();
     bool authenticate(string password);
+    
+    // 内部方法：直接添加成绩到列表（用于数据加载）
+    void addGradeInternal(class Grade* grade);
+    
+    // 内部方法：直接添加课程到列表（用于数据加载）
+    void addCourseInternal(class Course* course);
 
 private:
     string m_name;
@@ -46,6 +58,11 @@ string Teacher::info()
     return std::format("{}   {}\n", m_id, m_name);
 }
 
+string Teacher::getId() const
+{
+    return m_id;
+}
+
 bool Teacher::hasId(string id)
 {
     return id == m_id;
@@ -54,6 +71,11 @@ bool Teacher::hasId(string id)
 void Teacher::assignToCourse(class Course* course)
 {
     _courses.push_back(course);
+}
+
+void Teacher::setCourses(const vector<class Course*>& courses)
+{
+    _courses = courses;
 }
 
 
@@ -73,17 +95,20 @@ bool Teacher::hasCourse(string courseId)
 string Teacher::schedule()
 {
     auto result = std::format("{}'s teaching schedule:\n", m_name);
-    if (_courses.empty())
-    {
-        result += "(未安排课程)\n";
-    }
-    else
+    
+    // 如果内存中有课程信息，使用内存中的信息
+    if (!_courses.empty())
     {
         for (auto& c : _courses)
         {
             result += c->info();
         }
     }
+    else
+    {
+        result += "(未安排课程)\n";
+    }
+    
     return result;
 }
 
@@ -98,6 +123,8 @@ string Teacher::roster()
     return result;
 }
 
+
+
 void Teacher::displayCourseInfo(int& count)
 {
     count = _courses.size();
@@ -110,17 +137,32 @@ class Grade* Teacher::gradeCourse(string studentId, string courseId, double scor
     return grade;
 }
 
-void Teacher::forEachGrade(void (*func)(Grade*))
+void Teacher::displayGrades()
 {
-    for (auto& grade : _grades)
-    {
-        func(grade);
+    print("教师: {}\n", info());
+    print("\n=== 成绩列表 ===\n");
+    print("学生ID\t课程ID\t成绩\t评语\n");
+    print("----------------------------------------\n");
+    
+    bool found = false;
+    for (auto& grade : _grades) {
+        print("{}", grade->info());
+        found = true;
+    }
+    
+    if (!found) {
+        print("暂无成绩记录\n");
     }
 }
 
-vector<Grade*>& Teacher::getGrades()
+Grade* Teacher::findGradesByStudent(string studentId)
 {
-    return _grades;
+    for (auto& grade : _grades) {
+        if (grade->matches(studentId, "")) {
+            return grade;
+        }
+    }
+    return nullptr;
 }
 
 class Grade* Teacher::findGrade(string studentId, string courseId)
@@ -149,4 +191,26 @@ class Grade* Teacher::updateGrade(string studentId, string courseId, double scor
 bool Teacher::authenticate(string password)
 {
     return m_password == password;
+}
+
+// 内部方法：直接添加成绩到列表（用于数据加载）
+void Teacher::addGradeInternal(class Grade* grade)
+{
+    // 检查是否已经存在相同的成绩记录
+    for (auto existingGrade : _grades) {
+        if (existingGrade->matches(grade->getStudentId(), grade->getCourseId())) {
+            return; // 已存在，不重复添加
+        }
+    }
+    _grades.push_back(grade);
+}
+
+// 内部方法：直接添加课程到列表（用于数据加载）
+void Teacher::addCourseInternal(class Course* course)
+{
+    // 检查是否已经存在
+    auto it = std::find(_courses.begin(), _courses.end(), course);
+    if (it == _courses.end()) {
+        _courses.push_back(course);
+    }
 }
