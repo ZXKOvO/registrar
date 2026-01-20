@@ -24,6 +24,21 @@ public:
 
     // 检查是否匹配指定的学生ID和课程ID
     bool matches(string studentId, string courseId) const;
+    
+    // 获取教师ID
+    string getTeacherId() const;
+    
+    // 获取学生ID
+    string getStudentId() const;
+    
+    // 获取课程ID
+    string getCourseId() const;
+    
+    // 获取成绩
+    double getScore() const;
+    
+    // 获取评语
+    string getComment() const;
 
 private:
     string _studentId;      // 学生ID
@@ -60,4 +75,30 @@ void Grade::updateInfo(double score, string comment)
 bool Grade::matches(string studentId, string courseId) const
 {
     return _studentId == studentId && _courseId == courseId;
+}
+
+// 获取教师ID
+string Grade::getTeacherId() const
+{
+    return _teacherId;
+}
+
+string Grade::getStudentId() const
+{
+    return _studentId;
+}
+
+string Grade::getCourseId() const
+{
+    return _courseId;
+}
+
+double Grade::getScore() const
+{
+    return _score;
+}
+
+string Grade::getComment() const
+{
+    return _comment;
 }

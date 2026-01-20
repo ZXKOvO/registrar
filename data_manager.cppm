@@ -6,6 +6,7 @@ export import :course;
 export import :grade;
 export import :teaching_task;
 export import :enrollment;
+export import :academic_secretary;
 
 export class IDataAccess {
 public:
@@ -26,10 +27,11 @@ public:
     virtual std::vector<Course*> loadCourses() = 0;
     virtual bool removeCourse(const std::string& id) = 0;
     
-    // 成绩数据操作
+    // 成绩操作
     virtual void saveGrade(Grade* grade) = 0;
     virtual std::vector<Grade*> loadGrades() = 0;
     virtual bool removeGrade(const std::string& studentId, const std::string& courseId) = 0;
+    virtual bool removeGradeByStudent(const std::string& studentId) = 0;
     
     // 教学任务操作
     virtual void saveTeachingTask(TeachingTask* task) = 0;
@@ -40,6 +42,11 @@ public:
     virtual bool saveEnrollment(const std::string& studentId, const std::string& courseId) = 0;
     virtual bool removeEnrollment(const std::string& studentId, const std::string& courseId) = 0;
     virtual std::vector<Enrollment*> loadEnrollments() = 0;
+    
+    // 教学秘书数据操作
+    virtual void saveAcademicSecretary(AcademicSecretary* secretary) = 0;
+    virtual std::vector<AcademicSecretary*> loadAcademicSecretaries() = 0;
+    virtual bool removeAcademicSecretary(const std::string& id) = 0;
     
     // 事务支持
     virtual bool beginTransaction() = 0;
@@ -70,8 +77,9 @@ public:
     bool removeCourse(const std::string& id);
     
     void saveGrade(Grade* grade);
-    std::vector<Grade*> loadGrades();
     bool removeGrade(const std::string& studentId, const std::string& courseId);
+    bool removeGradeByStudent(const std::string& studentId);
+    std::vector<Grade*> loadGrades();
     
     void saveTeachingTask(TeachingTask* task);
     std::vector<TeachingTask*> loadTeachingTasks();
@@ -81,6 +89,11 @@ public:
     bool saveEnrollment(const std::string& studentId, const std::string& courseId);
     bool removeEnrollment(const std::string& studentId, const std::string& courseId);
     std::vector<Enrollment*> loadEnrollments();
+    
+    // 教学秘书数据操作
+    void saveAcademicSecretary(AcademicSecretary* secretary);
+    std::vector<AcademicSecretary*> loadAcademicSecretaries();
+    bool removeAcademicSecretary(const std::string& id);
     
     // 事务支持
     bool beginTransaction();

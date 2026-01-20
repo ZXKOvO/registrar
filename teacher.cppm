@@ -21,6 +21,7 @@ public:
     bool hasCourse(string courseId);
     string schedule();
     string roster();
+    
     void displayCourseInfo(int& count);
     void displayGrades();
     
@@ -31,6 +32,12 @@ public:
     class Grade* findGrade(string studentId, string courseId);
     class Grade* updateGrade(string studentId, string courseId, double score, string comment);
     bool authenticate(string password);
+    
+    // 内部方法：直接添加成绩到列表（用于数据加载）
+    void addGradeInternal(class Grade* grade);
+    
+    // 内部方法：直接添加课程到列表（用于数据加载）
+    void addCourseInternal(class Course* course);
 
 private:
     string m_name;
@@ -116,6 +123,8 @@ string Teacher::roster()
     return result;
 }
 
+
+
 void Teacher::displayCourseInfo(int& count)
 {
     count = _courses.size();
@@ -182,4 +191,26 @@ class Grade* Teacher::updateGrade(string studentId, string courseId, double scor
 bool Teacher::authenticate(string password)
 {
     return m_password == password;
+}
+
+// 内部方法：直接添加成绩到列表（用于数据加载）
+void Teacher::addGradeInternal(class Grade* grade)
+{
+    // 检查是否已经存在相同的成绩记录
+    for (auto existingGrade : _grades) {
+        if (existingGrade->matches(grade->getStudentId(), grade->getCourseId())) {
+            return; // 已存在，不重复添加
+        }
+    }
+    _grades.push_back(grade);
+}
+
+// 内部方法：直接添加课程到列表（用于数据加载）
+void Teacher::addCourseInternal(class Course* course)
+{
+    // 检查是否已经存在
+    auto it = std::find(_courses.begin(), _courses.end(), course);
+    if (it == _courses.end()) {
+        _courses.push_back(course);
+    }
 }

@@ -26,6 +26,7 @@ public:
     void studentGradeInterface();
     void teacherScheduleInterface();
     void teacherRosterInterface();
+    void teacherAllRostersInterface();
     void teacherGradeInterface();
     void secretaryStudentManagement();
     void secretaryTeacherManagement();
@@ -305,7 +306,8 @@ void UI::showTeacherMenu()
         print("========================================\n");
         print("1. 查看课程表\n");
         print("2. 查看学生名单\n");
-        print("3. 成绩评定\n");
+        print("3. 查看所有课程学生名单\n");
+        print("4. 成绩评定\n");
         print("0. 返回主菜单\n");
         print("========================================\n");
         print("请选择: ");
@@ -328,6 +330,9 @@ void UI::showTeacherMenu()
                 teacherRosterInterface();
                 break;
             case 3:
+                teacherAllRostersInterface();
+                break;
+            case 4:
                 teacherGradeInterface();
                 break;
             case 0:
@@ -367,6 +372,18 @@ void UI::teacherRosterInterface()
     
     // 显示课程学生名单
     _teacherController.displayCourseRoster(_authController.getCurrentUserId(), courseId);
+    pause();
+}
+
+void UI::teacherAllRostersInterface()
+{
+    clearScreen();
+    print("========================================\n");
+    print("      所有课程学生名单（详细）\n");
+    print("========================================\n");
+    
+    // 显示所有课程的详细学生名单
+    _teacherController.displayAllCourseRosters(_authController.getCurrentUserId());
     pause();
 }
 

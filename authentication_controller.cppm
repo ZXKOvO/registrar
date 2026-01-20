@@ -85,8 +85,7 @@ bool AuthenticationController::login(string id, string password, UserTypes type)
         }
         case UserTypes::SECRETARY:
         {
-            // TODO: 临时解决方案，硬编码一个教学秘书用于测试
-            // 后续应该从数据管理层获取教学秘书信息
+            // 硬编码教学秘书A001王秘书
             if (id == "A001") {
                 AcademicSecretary tempSecretary("A001", "王秘书", "123");
                 if (tempSecretary.authenticate(password)) {

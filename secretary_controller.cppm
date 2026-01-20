@@ -275,7 +275,7 @@ void SecretaryController::generateEnrollmentReport()
 
 void SecretaryController::generateCourseReport()
 {
-    print("{}\n", _registrar.generateCourseReport());
+    print("{}\n", _registrar.generateDetailedCourseReport());
 }
 
 void SecretaryController::generateTeacherWorkloadReport()

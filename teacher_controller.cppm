@@ -39,6 +39,9 @@ public:
     // 显示所有成绩
     void displayAllGrades(string teacherId);
     
+    // 显示所有课程的学生名单（含详细信息）
+    void displayAllCourseRosters(string teacherId);
+    
     // ========== 业务验证 ==========
     // 检查教师是否教授某课程
     bool hasCourse(string teacherId, string courseId);
@@ -93,7 +96,16 @@ void TeacherController::displayCourseRoster(string teacherId, string courseId)
         return;
     }
     
-    print("{}\n", course->roster());
+    // 手动构建详细的学生名单
+    print("  学生ID\t姓名\n");
+    print("  ----------------\n");
+    
+    // 遍历所有学生，找到选修该课程的学生
+    _registrar.forEachStudent([&](auto& student) {
+        if (student->hasCourse(courseId)) {
+            print("  {}\t{}\n", student->getId(), student->getName());
+        }
+    });
 }
 
 // 录入成绩
@@ -147,7 +159,13 @@ bool TeacherController::addGrade(string teacherId, string studentId, string cour
     }
     
     // 8. 执行录入成绩操作
-    teacher->gradeCourse(studentId, courseId, score, comment);
+    auto grade = teacher->gradeCourse(studentId, courseId, score, comment);
+    
+    // 保存成绩到数据库
+    if (_registrar.getDataManager()) {
+        _registrar.getDataManager()->saveGrade(grade);
+        print("成绩已保存到数据库\n");
+    }
     return true;
 }
 
@@ -181,6 +199,12 @@ bool TeacherController::updateGrade(string teacherId, string studentId, string c
         return false;
     }
     
+    // 更新数据库中的成绩
+    if (_registrar.getDataManager()) {
+        _registrar.getDataManager()->saveGrade(grade);
+        print("成绩已更新到数据库\n");
+    }
+    
     return true;
 }
 
@@ -194,6 +218,41 @@ void TeacherController::displayAllGrades(string teacherId)
     }
     
     teacher->displayGrades();
+}
+
+// 显示所有课程的学生名单（含详细信息）
+void TeacherController::displayAllCourseRosters(string teacherId)
+{
+    auto teacher = _registrar.findTeacherById(teacherId);
+    if (!teacher) {
+        print("错误：教师ID不存在！\n");
+        return;
+    }
+    
+    auto result = std::format("{}'s student rosters (详细):\n", teacher->getId());
+    
+    // 获取教师的所有课程
+    _registrar.forEachCourse([&](auto& course) {
+        // 检查教师是否教授该课程
+        if (teacher->hasCourse(course->identifier())) {
+            result += std::format("{}:\n", course->info());
+            
+            // 手动构建学生名单，包含ID和姓名
+            result += "  学生ID\t姓名\n";
+            result += "  ----------------\n";
+            
+            // 遍历所有学生，找到选修该课程的学生
+            _registrar.forEachStudent([&](auto& student) {
+                if (student->hasCourse(course->identifier())) {
+                    result += std::format("  {}\t{}\n", student->getId(), student->getName());
+                }
+            });
+            
+            result += "\n";
+        }
+    });
+    
+    print("{}\n", result);
 }
 
 // 检查教师是否教授某课程

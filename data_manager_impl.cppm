@@ -8,6 +8,7 @@ import :teacher;
 import :course;
 import :grade;
 import :teaching_task;
+import :academic_secretary;
 import std;
 using std::string;
 using std::vector;
@@ -62,6 +63,7 @@ public:
     void saveGrade(Grade* grade) override;
     vector<Grade*> loadGrades() override;
     bool removeGrade(const string& studentId, const string& courseId) override;
+    bool removeGradeByStudent(const string& studentId) override;
     
     void saveTeachingTask(TeachingTask* task) override;
     vector<TeachingTask*> loadTeachingTasks() override;
@@ -70,6 +72,10 @@ public:
     bool saveEnrollment(const string& studentId, const string& courseId) override;
     bool removeEnrollment(const string& studentId, const string& courseId) override;
     vector<Enrollment*> loadEnrollments() override;
+    
+    void saveAcademicSecretary(AcademicSecretary* secretary) override;
+    vector<AcademicSecretary*> loadAcademicSecretaries() override;
+    bool removeAcademicSecretary(const string& id) override;
     
     bool beginTransaction() override { return true; }
     bool commit() override { return true; }
@@ -84,6 +90,7 @@ private:
     vector<Grade*> _grades;
     vector<TeachingTask*> _teachingTasks;
     vector<Enrollment> _enrollments;
+    vector<AcademicSecretary*> _academicSecretaries;
 };
 
 // PostgreSQLAdapter实现
@@ -110,6 +117,7 @@ public:
     void saveGrade(Grade* grade) override;
     vector<Grade*> loadGrades() override;
     bool removeGrade(const string& studentId, const string& courseId) override;
+    bool removeGradeByStudent(const string& studentId) override;
     
     void saveTeachingTask(TeachingTask* task) override;
     vector<TeachingTask*> loadTeachingTasks() override;
@@ -118,6 +126,10 @@ public:
     bool saveEnrollment(const string& studentId, const string& courseId) override;
     bool removeEnrollment(const string& studentId, const string& courseId) override;
     vector<Enrollment*> loadEnrollments() override;
+    
+    void saveAcademicSecretary(AcademicSecretary* secretary) override;
+    vector<AcademicSecretary*> loadAcademicSecretaries() override;
+    bool removeAcademicSecretary(const string& id) override;
     
     bool beginTransaction() override;
     bool commit() override;
@@ -170,6 +182,12 @@ void InMemoryStorage::clearAll() {
         delete task;
     }
     _teachingTasks.clear();
+    
+    // 清理教学秘书
+    for (auto secretary : _academicSecretaries) {
+        delete secretary;
+    }
+    _academicSecretaries.clear();
 }
 
 void InMemoryStorage::saveStudent(Student* student) {
@@ -260,6 +278,20 @@ bool InMemoryStorage::removeGrade(const string& studentId, const string& courseI
     return false;
 }
 
+bool InMemoryStorage::removeGradeByStudent(const string& studentId) {
+    bool removed = false;
+    for (auto it = _grades.begin(); it != _grades.end(); ) {
+        if ((*it)->matches(studentId, "")) {
+            delete *it;
+            it = _grades.erase(it);
+            removed = true;
+        } else {
+            ++it;
+        }
+    }
+    return removed;
+}
+
 void InMemoryStorage::saveTeachingTask(TeachingTask* task) {
     _teachingTasks.push_back(task);
 }
@@ -305,6 +337,28 @@ vector<Enrollment*> InMemoryStorage::loadEnrollments() {
         enrollments.push_back(new Enrollment(e.enrolledStudentId(), e.enrolledCourseId()));
     }
     return enrollments;
+}
+
+void InMemoryStorage::saveAcademicSecretary(AcademicSecretary* secretary) {
+    _academicSecretaries.push_back(secretary);
+}
+
+vector<AcademicSecretary*> InMemoryStorage::loadAcademicSecretaries() {
+    vector<AcademicSecretary*> secretaries;
+    secretaries.insert(secretaries.end(), _academicSecretaries.begin(), _academicSecretaries.end());
+    return secretaries;
+}
+
+bool InMemoryStorage::removeAcademicSecretary(const string& id) {
+    auto it = find_if(_academicSecretaries.begin(), _academicSecretaries.end(),
+        [&id](AcademicSecretary* s) { return s->hasId(id); });
+    
+    if (it != _academicSecretaries.end()) {
+        delete *it;
+        _academicSecretaries.erase(it);
+        return true;
+    }
+    return false;
 }
 
 // PostgreSQLAdapter实现
@@ -448,6 +502,21 @@ bool PostgreSQLAdapter::createTables() {
     )";
     
     res = executeQuery(createStudentEnrollmentsTable);
+    if (!res) return false;
+    PQclear(res);
+    
+    // 创建教学秘书表
+    const char* createAcademicSecretariesTable = R"(
+        CREATE TABLE IF NOT EXISTS academic_secretaries (
+            id VARCHAR(20) PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            password VARCHAR(100) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    )";
+    
+    res = executeQuery(createAcademicSecretariesTable);
     if (!res) return false;
     PQclear(res);
     
@@ -616,32 +685,29 @@ bool PostgreSQLAdapter::removeCourse(const string& id) {
 }
 
 void PostgreSQLAdapter::saveGrade(Grade* grade) {
-    string info = grade->info();
-    size_t start = info.find("学生: ") + 4;
-    size_t end = info.find(" | 课程: ", start);
-    string studentId = info.substr(start, end - start);
+    // 直接从Grade对象获取数据
+    string studentId = grade->getStudentId();
+    string courseId = grade->getCourseId();
+    string teacherId = grade->getTeacherId();
+    double score = grade->getScore();
+    string comment = grade->getComment();
     
-    start = info.find("课程: ", end) + 4;
-    end = info.find(" | 教师: ", start);
-    string courseId = info.substr(start, end - start);
-    
-    start = info.find("教师: ", end) + 4;
-    end = info.find(" | 成绩: ", start);
-    string teacherId = info.substr(start, end - start);
-    
-    start = info.find("成绩: ", end) + 4;
-    end = info.find(" | 评语: ", start);
-    string scoreStr = info.substr(start, end - start);
-    double score = std::stod(scoreStr);
-    
-    start = info.find("评语: ", end) + 4;
-    string comment = info.substr(start);
+    // 处理评语中的特殊字符，确保SQL安全
+    string escapedComment;
+    for (size_t i = 0; i < comment.length(); ++i) {
+        unsigned char c = comment[i];
+        if (c == '\'') {
+            escapedComment += "''"; // 转义单引号
+        } else if (c >= 32) { // 所有可打印字符
+            escapedComment += c;
+        }
+    }
     
     string sql = format("INSERT INTO grades (student_id, course_id, teacher_id, score, comment) "
                         "VALUES ('{}', '{}', '{}', {}, '{}') "
                         "ON CONFLICT (student_id, course_id) DO UPDATE SET "
                         "teacher_id = EXCLUDED.teacher_id, score = EXCLUDED.score, comment = EXCLUDED.comment",
-                        studentId, courseId, teacherId, score, comment);
+                        studentId, courseId, teacherId, score, escapedComment);
     
     pg_result* res = executeQuery(sql);
     if (res) {
@@ -661,7 +727,19 @@ vector<Grade*> PostgreSQLAdapter::loadGrades() {
         string studentId = PQgetvalue(res, i, 0);
         string courseId = PQgetvalue(res, i, 1);
         string teacherId = PQgetvalue(res, i, 2);
-        double score = std::stod(PQgetvalue(res, i, 3));
+        
+        // 安全转换成绩，处理可能的空值或无效值
+        double score = 0.0;
+        try {
+            string scoreStr = PQgetvalue(res, i, 3);
+            if (!scoreStr.empty()) {
+                score = std::stod(scoreStr);
+            }
+        } catch (const std::exception& e) {
+            // 如果转换失败，使用默认值0.0
+            score = 0.0;
+        }
+        
         string comment = PQgetvalue(res, i, 4);
         
         grades.push_back(new Grade(studentId, courseId, teacherId, score, comment));
@@ -674,6 +752,16 @@ vector<Grade*> PostgreSQLAdapter::loadGrades() {
 bool PostgreSQLAdapter::removeGrade(const string& studentId, const string& courseId) {
     string sql = format("DELETE FROM grades WHERE student_id = '{}' AND course_id = '{}'", 
                         studentId, courseId);
+    pg_result* res = executeQuery(sql);
+    if (!res) return false;
+    
+    bool affected = (PQcmdTuples(res)[0] != '0');
+    PQclear(res);
+    return affected;
+}
+
+bool PostgreSQLAdapter::removeGradeByStudent(const string& studentId) {
+    string sql = format("DELETE FROM grades WHERE student_id = '{}'", studentId);
     pg_result* res = executeQuery(sql);
     if (!res) return false;
     
@@ -740,11 +828,25 @@ vector<TeachingTask*> PostgreSQLAdapter::loadTeachingTasks() {
 bool PostgreSQLAdapter::removeTeachingTask(const string& courseId, const string& teacherId) {
     string sql = format("DELETE FROM teaching_tasks WHERE course_id = '{}' AND teacher_id = '{}'", 
                         courseId, teacherId);
-    pg_result* res = executeQuery(sql);
-    if (!res) return false;
     
-    bool affected = (PQcmdTuples(res)[0] != '0');
+    pg_result* res = executeQuery(sql);
+    if (!res) {
+        print("SQL执行失败\n");
+        return false;
+    }
+    
+    // 检查是否影响了行
+    const char* tuples = PQcmdTuples(res);
+    bool affected = (tuples && tuples[0] != '0');
+    
     PQclear(res);
+    
+    if (affected) {
+        print("成功删除教学任务: 教师 {}, 课程 {}\n", teacherId, courseId);
+    } else {
+        print("未找到要删除的教学任务: 教师 {}, 课程 {}\n", teacherId, courseId);
+    }
+    
     return affected;
 }
 
@@ -789,6 +891,53 @@ vector<Enrollment*> PostgreSQLAdapter::loadEnrollments() {
     
     PQclear(res);
     return enrollments;
+}
+
+void PostgreSQLAdapter::saveAcademicSecretary(AcademicSecretary* secretary) {
+    string info = secretary->info();
+    size_t end = info.find("   ");
+    string id = info.substr(0, end);
+    string name = info.substr(end + 3);
+    string password = "123";
+    
+    string sql = format("INSERT INTO academic_secretaries (id, name, password) VALUES ('{}', '{}', '{}') "
+                        "ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, password = EXCLUDED.password",
+                        id, name, password);
+    
+    pg_result* res = executeQuery(sql);
+    if (res) {
+        PQclear(res);
+    }
+}
+
+vector<AcademicSecretary*> PostgreSQLAdapter::loadAcademicSecretaries() {
+    vector<AcademicSecretary*> secretaries;
+    const char* sql = "SELECT id, name, password FROM academic_secretaries";
+    
+    pg_result* res = executeQuery(sql);
+    if (!res) return secretaries;
+    
+    int rows = PQntuples(res);
+    for (int i = 0; i < rows; i++) {
+        string id = PQgetvalue(res, i, 0);
+        string name = PQgetvalue(res, i, 1);
+        string password = PQgetvalue(res, i, 2);
+        
+        secretaries.push_back(new AcademicSecretary(id, name, password));
+    }
+    
+    PQclear(res);
+    return secretaries;
+}
+
+bool PostgreSQLAdapter::removeAcademicSecretary(const string& id) {
+    string sql = format("DELETE FROM academic_secretaries WHERE id = '{}'", id);
+    pg_result* res = executeQuery(sql);
+    if (!res) return false;
+    
+    bool affected = (PQcmdTuples(res)[0] != '0');
+    PQclear(res);
+    return affected;
 }
 
 bool PostgreSQLAdapter::beginTransaction() {
@@ -885,6 +1034,10 @@ bool DataManager::removeGrade(const string& studentId, const string& courseId) {
     return _dataAccess->removeGrade(studentId, courseId);
 }
 
+bool DataManager::removeGradeByStudent(const string& studentId) {
+    return _dataAccess->removeGradeByStudent(studentId);
+}
+
 void DataManager::saveTeachingTask(TeachingTask* task) {
     _dataAccess->saveTeachingTask(task);
 }
@@ -907,6 +1060,18 @@ bool DataManager::removeEnrollment(const string& studentId, const string& course
 
 vector<Enrollment*> DataManager::loadEnrollments() {
     return _dataAccess->loadEnrollments();
+}
+
+void DataManager::saveAcademicSecretary(AcademicSecretary* secretary) {
+    _dataAccess->saveAcademicSecretary(secretary);
+}
+
+vector<AcademicSecretary*> DataManager::loadAcademicSecretaries() {
+    return _dataAccess->loadAcademicSecretaries();
+}
+
+bool DataManager::removeAcademicSecretary(const string& id) {
+    return _dataAccess->removeAcademicSecretary(id);
 }
 
 bool DataManager::beginTransaction() {
